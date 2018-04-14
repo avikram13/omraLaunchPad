@@ -11,13 +11,13 @@ import SettingsScreen from '../screens/SettingsScreen';
 
 export default TabNavigator(
   {
-    Home: {
+    WorkOrder: {
       screen: HomeScreen,
     },
-    Links: {
+    Review: {
       screen: LinksScreen,
     },
-    Settings: {
+    Login: {
       screen: SettingsScreen,
     },
   },
@@ -27,29 +27,23 @@ export default TabNavigator(
         const { routeName } = navigation.state;
         let iconName;
         switch (routeName) {
-          case 'Home':
+          case 'Login':
+            iconName =
+              Platform.OS === 'ios' ? `ios-options${focused ? '' : '-outline'}` : 'md-options';
+              break;
+          case 'WorkOrder':
             iconName =
               Platform.OS === 'ios'
                 ? `ios-information-circle${focused ? '' : '-outline'}`
                 : 'md-information-circle';
             break;
-          case 'Links':
+          case 'Review':
             iconName = Platform.OS === 'ios' ? `ios-link${focused ? '' : '-outline'}` : 'md-link';
-            break;
-          case 'Settings':
-            iconName =
-              Platform.OS === 'ios' ? `ios-options${focused ? '' : '-outline'}` : 'md-options';
         }
-        // <Ionicons
-        //   name={iconName}
-        //   size={28}
-        //   style={{ marginBottom: -3, width: 25 }}
-        //   color={focused ? Colors.tabIconSelected : Colors.tabIconDefault}
-        // />
 
         return (
           <View >
-            <Text >Get started by opening</Text>
+            <Text > Angesh </Text>
           </View>
         );
       },
