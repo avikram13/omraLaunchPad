@@ -15,7 +15,7 @@ import { MonoText, HercText } from '../components/StyledText';
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
-    header: null,
+    header: 'null',
   };
 
   // <Image

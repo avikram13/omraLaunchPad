@@ -7,31 +7,37 @@ import Colors from '../constants/Colors';
 
 import HomeScreen from '../screens/HomeScreen';
 import LinksScreen from '../screens/LinksScreen';
-import SettingsScreen from '../screens/SettingsScreen';
+import LoginFlow from './LoginFlow';
 
 export default TabNavigator(
   {
+    Login: {
+      screen: LoginFlow,
+    },
     WorkOrder: {
       screen: HomeScreen,
     },
     Review: {
       screen: LinksScreen,
     },
-    Login: {
-      screen: SettingsScreen,
-    },
   },
   {
+
     navigationOptions: ({ navigation }) => ({
       tabBarIcon: ({ focused }) => {
+        console.log('Angesh Vikram');
+        console.log(navigation.state);
+        console.log(focused);
         const { routeName } = navigation.state;
         let iconName;
         switch (routeName) {
           case 'Login':
+            console.log('Login');
             iconName =
               Platform.OS === 'ios' ? `ios-options${focused ? '' : '-outline'}` : 'md-options';
               break;
           case 'WorkOrder':
+            console.log('WorkOrder');
             iconName =
               Platform.OS === 'ios'
                 ? `ios-information-circle${focused ? '' : '-outline'}`
@@ -52,5 +58,8 @@ export default TabNavigator(
     tabBarPosition: 'bottom',
     animationEnabled: false,
     swipeEnabled: false,
+    lazy: true,
+    backBehavior:     'initialRoute',
+    initialRouteName: 'Login',
   }
 );

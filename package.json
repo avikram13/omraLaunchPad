@@ -19,7 +19,7 @@
     "react-native-branch": "^2.2.4",
     "react-native-gesture-handler": "^1.0.0-alpha.42",
     "react-native-maps": "^0.21.0",
-    "react-navigation": "1.5.10",
+    "react-navigation": "^1.5.10",
     "react-test-renderer": "^16.3.1"
   },
   "devDependencies": {

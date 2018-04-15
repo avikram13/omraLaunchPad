@@ -17,7 +17,7 @@ import Secured from '../screens/LogOutScreen';
 
 export default class LoginFlow extends React.Component {
   static navigationOptions = {
-    header: null,
+    header: 'Login',
   };
 
   state = {
@@ -34,6 +34,13 @@ export default class LoginFlow extends React.Component {
   render() {
     // If dimensions is defined, render the real view otherwise the dummy view
 
+console.log('this.state.isLoggedIn');
+    console.log(this.state.isLoggedIn);
+    if(this.state.isLoggedIn){
+    }
+    else{
+      console.log('I am false');
+    }
     return (
       <View style={styles.container}>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -46,23 +53,19 @@ export default class LoginFlow extends React.Component {
             <HercText style={styles.omraTagText}>(perfection can only be achieved by accurate review system)</HercText>
           </View>
           <View style={styles.getStartedContainer}>
-          if (this.state.isLoggedIn)
+          {this.state.isLoggedIn?
             <Secured
                 onLogoutPress={() => this.setState({isLoggedIn: false})}
-            />;
-            else
+            />
+            :
             <Login
               onLoginPress={() => this.setState({isLoggedIn: true})}
-              />;
+              />
+          }
           </View>
         </ScrollView>
 
         <View style={styles.tabBarInfoContainer}>
-          <Text style={styles.tabBarInfoText}>This is a tab bar. You can edit it in:</Text>
-
-          <View style={[styles.codeHighlightContainer, styles.navigationFilename]}>
-            <MonoText style={styles.codeHighlightText}>navigation/MainTabNavigator.js</MonoText>
-          </View>
         </View>
       </View>
     );
@@ -176,7 +179,7 @@ const styles = StyleSheet.create({
     }),
     alignItems: 'center',
     backgroundColor: '#fbfbfb',
-    paddingVertical: 20,
+    paddingVertical: 2,
   },
   tabBarInfoText: {
     fontSize: 17,
