@@ -11,6 +11,7 @@ import {
     ActivityIndicator
 } from 'react-native';
 
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 
 import { StackNavigator } from 'react-navigation';
 
@@ -83,7 +84,8 @@ export default class Login extends React.Component {
         return (
           <ScrollView style={styles.loginScrollViewText} >
           {!this.state.message && (
-          <View>
+          <KeyboardAwareScrollView>
+          <View style={{ height: 80 }} />
             <Text
               style={styles.loginText}>
               Login:
@@ -121,7 +123,8 @@ export default class Login extends React.Component {
                 title="Submit"
               />
             </View>
-            </View>
+            <View style={{ height: 60 }} />
+            </KeyboardAwareScrollView>
             )}
             {!!this.state.message && (
               <View>
