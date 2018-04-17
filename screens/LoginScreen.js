@@ -88,50 +88,56 @@ export default class Login extends React.Component {
       console.log(this.router);
         return (
           <ScrollView style={styles.loginScrollViewText} >
-<Text
-style={styles.loginText}>
-Login:
-</Text>
-<View style={styles.loginInputView}>
-<TextInput
-style={styles.loginUserText}
-ref={component => this._username = component}
-placeholder='Username'
-onChangeText={(username) => this.setState({username})}
-autoFocus={true}
-onFocus={this.clearUsername}
-/>
-</View>
-<View style={styles.loginInputView}>
-<TextInput
-style={styles.loginUserText}
-ref={component => this._password = component}
-placeholder='Password'
-onChangeText={(password) => this.setState({password})}
-secureTextEntry={true}
-onFocus={this.clearPassword}
-onSubmitEditing={this._userLogin}
-/>
-</View>
-{!!this.state.message && (
-<Text
-style={{fontSize: 14, color: 'red', padding: 5}}>
-{this.state.message}
-</Text>
-)}
-{this.state.isLoggingIn && <ActivityIndicator />}
-<View style={{margin:7}} />
-<View
-style={styles.loginSubmitBtnView}>
-<View style={{width:20}}/>
-<Button
-style={styles.loginSubmitBtn}
-disabled={this.state.isLoggingIn||!this.state.username||!this.state.password}
-  onPress={this._userLogin}
-  title="Submit"
-/>
-</View>
-</ScrollView>
+          {!this.state.message && (
+          <View>
+            <Text
+              style={styles.loginText}>
+              Login:
+            </Text>
+            <View style={styles.loginInputView}>
+              <TextInput
+                style={styles.loginUserText}
+                ref={component => this._username = component}
+                placeholder='Username'
+                onChangeText={(username) => this.setState({username})}
+                autoFocus={true}
+                onFocus={this.clearUsername}
+              />
+            </View>
+            <View style={styles.loginInputView}>
+            <TextInput
+              style={styles.loginUserText}
+              ref={component => this._password = component}
+              placeholder='Password'
+              onChangeText={(password) => this.setState({password})}
+              secureTextEntry={true}
+              onFocus={this.clearPassword}
+              onSubmitEditing={this._userLogin}
+            />
+            </View>
+            {this.state.isLoggingIn && <ActivityIndicator />}
+            <View style={{margin:7}} />
+            <View
+            style={styles.loginSubmitBtnView}>
+              <View style={{width:20}}/>
+              <Button
+                style={styles.loginSubmitBtn}
+                disabled={this.state.isLoggingIn||!this.state.username||!this.state.password}
+                onPress={this._userLogin}
+                title="Submit"
+              />
+            </View>
+            </View>
+            )}
+            {!!this.state.message && (
+              <View>
+              <Text
+                style={{fontSize: 14, color: 'red', padding: 5}}>
+                {this.state.message}
+              </Text>
+              </View>
+            )}
+            </ScrollView>
         );
     }
 }
