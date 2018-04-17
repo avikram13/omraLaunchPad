@@ -18,7 +18,7 @@ import Secured from '../screens/LogOutScreen';
 export default class LoginFlow extends React.Component {
 
   static navigationOptions = {
-    header: 'Login',
+    title: 'Login',
   };
 
   getSize() {
@@ -37,7 +37,7 @@ export default class LoginFlow extends React.Component {
       <View style={styles.container}>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
           <Image
-            style={{width: this.getSize().width, height: 85}}
+            style={{width: this.getSize().width, height: 85, marginTop:-30}}
             source={require('../assets/images/Logo_LaunchPad.png')}
           />
           <View style={styles.welcomeContainer}>

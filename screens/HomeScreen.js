@@ -15,7 +15,7 @@ import { MonoText, HercText } from '../components/StyledText';
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
-    header: 'null',
+    title: 'Work Order',
   };
 
   // <Image
@@ -41,7 +41,7 @@ export default class HomeScreen extends React.Component {
       <View style={styles.container}>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
           <Image
-            style={{width: this.getSize().width, height: 85}}
+            style={{width: this.getSize().width, height: 85, marginTop:-30}}
             source={require('../assets/images/Logo_LaunchPad.png')}
           />
           <View style={styles.welcomeContainer}>
@@ -70,11 +70,6 @@ export default class HomeScreen extends React.Component {
         </ScrollView>
 
         <View style={styles.tabBarInfoContainer}>
-          <Text style={styles.tabBarInfoText}>This is a tab bar. You can edit it in:</Text>
-
-          <View style={[styles.codeHighlightContainer, styles.navigationFilename]}>
-            <MonoText style={styles.codeHighlightText}>navigation/MainTabNavigator.js</MonoText>
-          </View>
         </View>
       </View>
     );
@@ -203,7 +198,7 @@ const styles = StyleSheet.create({
     }),
     alignItems: 'center',
     backgroundColor: '#fbfbfb',
-    paddingVertical: 20,
+    paddingVertical: 2,
   },
   tabBarInfoText: {
     fontSize: 17,
