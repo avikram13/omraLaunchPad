@@ -5,6 +5,8 @@ import { StackNavigator } from 'react-navigation';
 import MainTabNavigator from './MainTabNavigator';
 import registerForPushNotificationsAsync from '../api/registerForPushNotificationsAsync';
 
+import { updateFocus, getCurrentRouteKey } from 'react-navigation-is-focused-hoc'
+
 const RootStackNavigator = StackNavigator(
   {
     Main: {
@@ -22,7 +24,22 @@ const RootStackNavigator = StackNavigator(
 
 export default class RootNavigator extends React.Component {
 
+  constructor(props)  {
+          super(props);
+      }
+
   render() {
-    return <RootStackNavigator />;
+    return <RootStackNavigator screenProps={{ rootNavigation: this.props.navigation }}
+      onNavigationStateChange={(prevState, currentState) => {
+          // If you want to ignore the state changed from `DrawerNavigator`, use this:
+          /*
+            if (/^Drawer(Open|Close|Toggle)$/.test(getCurrentRouteKey(currentState)) === false) {
+              updateFocus(currentState)
+              return
+            }
+          */
+          updateFocus(currentState)
+      }}
+    />;
   }
 }

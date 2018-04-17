@@ -16,13 +16,10 @@ import Login from '../screens/LoginScreen';
 import Secured from '../screens/LogOutScreen';
 
 export default class LoginFlow extends React.Component {
+
   static navigationOptions = {
     header: 'Login',
   };
-
-  state = {
-    isLoggedIn: false
-  }
 
   getSize() {
       return {
@@ -33,14 +30,9 @@ export default class LoginFlow extends React.Component {
 
   render() {
     // If dimensions is defined, render the real view otherwise the dummy view
+    const {navigate} = this.props;
+    console.log('From LoginFlow:', navigate);
 
-console.log('this.state.isLoggedIn');
-    console.log(this.state.isLoggedIn);
-    if(this.state.isLoggedIn){
-    }
-    else{
-      console.log('I am false');
-    }
     return (
       <View style={styles.container}>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -53,15 +45,9 @@ console.log('this.state.isLoggedIn');
             <HercText style={styles.omraTagText}>(perfection can only be achieved by accurate review system)</HercText>
           </View>
           <View style={styles.getStartedContainer}>
-          {this.state.isLoggedIn?
-            <Secured
-                onLogoutPress={() => this.setState({isLoggedIn: false})}
-            />
-            :
             <Login
-              onLoginPress={() => this.setState({isLoggedIn: true})}
+              screenProps={{ rootNavigation: this.props.navigation }}
               />
-          }
           </View>
         </ScrollView>
 

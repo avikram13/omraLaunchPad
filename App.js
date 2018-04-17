@@ -1,8 +1,9 @@
 import React from 'react';
-import { Platform, StatusBar, StyleSheet, View } from 'react-native';
+import { Platform, StatusBar, StyleSheet, View, AppRegistry } from 'react-native';
 import { AppLoading, Asset, Font } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
 import RootNavigation from './navigation/RootNavigation';
+import MainTabNavigator from './navigation/MainTabNavigator';
 
 export default class App extends React.Component {
   state = {
@@ -12,11 +13,11 @@ export default class App extends React.Component {
   render() {
     if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen) {
       return (
-        <AppLoading
-          startAsync={this._loadResourcesAsync}
-          onError={this._handleLoadingError}
-          onFinish={this._handleFinishLoading}
-        />
+          <AppLoading
+            startAsync={this._loadResourcesAsync}
+            onError={this._handleLoadingError}
+            onFinish={this._handleFinishLoading}
+          />
       );
     } else {
       return (
@@ -55,6 +56,8 @@ export default class App extends React.Component {
     this.setState({ isLoadingComplete: true });
   };
 }
+
+AppRegistry.registerComponent('App', () => App);
 
 const styles = StyleSheet.create({
   container: {

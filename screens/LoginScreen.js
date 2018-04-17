@@ -11,6 +11,14 @@ import {
     ActivityIndicator
 } from 'react-native';
 
+
+import { StackNavigator } from 'react-navigation';
+
+import { createStore, combineReducers } from 'redux';
+import { connect } from 'react-redux';
+
+import AppNavigator from '../navigation/MainTabNavigator';
+
 // import Environment from '../../Environment';
 
 export default class Login extends React.Component {
@@ -18,50 +26,30 @@ export default class Login extends React.Component {
     state = {
         username: '',
         password: '',
-        isLoggingIn: false,
+        isLoggingIn: '',
         message: ''
+    }
+
+    constructor(props) {
+        super(props);
+        this._userLogin = this._userLogin.bind(this);
+        //this.navigate = this.props.navigation.navigate;
     }
 
     _userLogin = () => {
 
-        this.setState({ isLoggingIn: true, message: '' });
+        this.setState({ isLoggingIn: true, message: 'LoggedIn' });
 
+        console.log(this.state.isLoggingIn);
         var params = {
             username: this.state.username,
             password: this.state.password,
             grant_type: 'password'
         };
-
-        var formBody = [];
-        for (var property in params) {
-            var encodedKey = encodeURIComponent(property);
-            var encodedValue = encodeURIComponent(params[property]);
-            formBody.push(encodedKey + "=" + encodedValue);
-        }
-        formBody = formBody.join("&");
-
         var proceed = false;
-        this.setState({ isLoggingIn: false });
-      //   fetch("https://"+Environment.CLIENT_API+"/oauth/token", {
-      //           method: "POST",
-      //           headers: {
-      //               'Content-Type': 'application/x-www-form-urlencoded'
-      //           },
-      //           body: formBody
-      //       })
-      //       .then((response) => response.json())
-      //       .then((response) => {
-      //           if (response.status==200) proceed = true;
-      //           else this.setState({ message: response.message });
-      //       })
-      //       .then(() => {
-      //           this.setState({ isLoggingIn: false })
-      //           if (proceed) this.props.onLoginPress();
-      //       })
-      //       .catch(err => {
-			// 	this.setState({ message: err.message });
-			// 	this.setState({ isLoggingIn: false })
-			// });
+        this.setState({ isLoggingIn: true });
+
+        this.props.screenProps.rootNavigation.navigate('WorkOrder');
     }
 
     clearUsername = () => {
@@ -75,56 +63,76 @@ export default class Login extends React.Component {
     }
 
 
+    // BugFreeStackNavigator = () => {
+    // 	var navigator = StackNavigator.apply(null, arguments);
+    // 	navigator.router.getStateForAction = navigateOnce(navigator.router.getStateForAction);
+    // 	return navigator;
+    // }
+
+    componentWillMount(){
+            console.log('===============componentWillMount=====');
+    }
+
+    componentWillReceiveProps() {
+            console.log('rerender here')
+            //this.yourFunction()
+            //this.setState({})
+        }
 
     render() {
+      const {navigate} = this.props;
+      console.log('From Mother:', navigate);
       console.log(this.state.isLoggingIn);
+      console.log('===============Login=====');
+      //const { navigate } = this.props.navigation;
+      console.log(this.router);
         return (
-            <ScrollView style={styles.loginScrollViewText} >
-				<Text
-					style={styles.loginText}>
-					Login:
-				</Text>
-        <View style={styles.loginInputView}>
-				    <TextInput
-            style={styles.loginUserText}
-					  ref={component => this._username = component}
-					  placeholder='Username'
-					  onChangeText={(username) => this.setState({username})}
-					  autoFocus={true}
-					  onFocus={this.clearUsername}
-				    />
-        </View>
-        <View style={styles.loginInputView}>
-				    <TextInput
-            style={styles.loginUserText}
-					  ref={component => this._password = component}
-					  placeholder='Password'
-					  onChangeText={(password) => this.setState({password})}
-					  secureTextEntry={true}
-					  onFocus={this.clearPassword}
-					  onSubmitEditing={this._userLogin}
-				    />
-        </View>
-				{!!this.state.message && (
-					<Text
-						style={{fontSize: 14, color: 'red', padding: 5}}>
-						{this.state.message}
-					</Text>
-				)}
-				{this.state.isLoggingIn && <ActivityIndicator />}
-				<View style={{margin:7}} />
-        <View
-          style={styles.loginSubmitBtnView}>
-          <View style={{width:20}}/>
-				  <Button
-            style={styles.loginSubmitBtn}
-					  disabled={this.state.isLoggingIn||!this.state.username||!this.state.password}
-		      		onPress={this._userLogin}
-		      		title="Submit"
-		      />
-         </View>
-	      </ScrollView>
-        )
+          <ScrollView style={styles.loginScrollViewText} >
+<Text
+style={styles.loginText}>
+Login:
+</Text>
+<View style={styles.loginInputView}>
+<TextInput
+style={styles.loginUserText}
+ref={component => this._username = component}
+placeholder='Username'
+onChangeText={(username) => this.setState({username})}
+autoFocus={true}
+onFocus={this.clearUsername}
+/>
+</View>
+<View style={styles.loginInputView}>
+<TextInput
+style={styles.loginUserText}
+ref={component => this._password = component}
+placeholder='Password'
+onChangeText={(password) => this.setState({password})}
+secureTextEntry={true}
+onFocus={this.clearPassword}
+onSubmitEditing={this._userLogin}
+/>
+</View>
+{!!this.state.message && (
+<Text
+style={{fontSize: 14, color: 'red', padding: 5}}>
+{this.state.message}
+</Text>
+)}
+{this.state.isLoggingIn && <ActivityIndicator />}
+<View style={{margin:7}} />
+<View
+style={styles.loginSubmitBtnView}>
+<View style={{width:20}}/>
+<Button
+style={styles.loginSubmitBtn}
+disabled={this.state.isLoggingIn||!this.state.username||!this.state.password}
+  onPress={this._userLogin}
+  title="Submit"
+/>
+</View>
+</ScrollView>
+        );
     }
 }
 
@@ -166,7 +174,6 @@ const styles = StyleSheet.create({
   loginScrollViewText: {
     width: getSize().width,
     padding: 20,
-    fontWeight: 'bold',
     paddingTop: 80
   }
 });

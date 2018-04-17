@@ -1,13 +1,15 @@
 import React from 'react';
 import { Platform, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { TabNavigator, TabBarBottom } from 'react-navigation';
 
-import Colors from '../constants/Colors';
+import { StackNavigator, TabNavigator, TabBarBottom, addNavigationHelpers, AppRegistry } from 'react-navigation';
+import { createStore, combineReducers } from 'redux';
+import { connect } from 'react-redux';
 
 import HomeScreen from '../screens/HomeScreen';
 import LinksScreen from '../screens/LinksScreen';
 import LoginFlow from './LoginFlow';
+
 
 export default TabNavigator(
   {
@@ -23,7 +25,11 @@ export default TabNavigator(
   },
   {
 
-    navigationOptions: ({ navigation }) => ({
+    navigationOptions: ({ navigation, screenProps }) => ({
+      tabBarOnPress: (scene, jumpToIndex) => {
+          console.log('onPress:', scene.scene.index);
+          scene.jumpToIndex(scene.scene.index);
+        },
       tabBarIcon: ({ focused }) => {
         console.log('Angesh Vikram');
         console.log(navigation.state);
@@ -58,8 +64,11 @@ export default TabNavigator(
     tabBarPosition: 'bottom',
     animationEnabled: false,
     swipeEnabled: false,
-    lazy: true,
+    lazy: false,
     backBehavior:     'initialRoute',
     initialRouteName: 'Login',
-  }
+  }, {
+    initialRouteName: 'LoginFlow',
+    mode: 'modal'
+}
 );
