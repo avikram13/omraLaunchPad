@@ -38,7 +38,7 @@ export default class Login extends React.Component {
 
     _userLogin = () => {
 
-        this.setState({ isLoggingIn: true, message: 'LoggedIn' });
+        this.setState({ isLoggingIn: true, message: ('to omra '+this.state.username)});
 
         console.log(this.state.isLoggingIn);
         var params = {
@@ -62,30 +62,24 @@ export default class Login extends React.Component {
         this.setState({ message: '' });
     }
 
-
-    // BugFreeStackNavigator = () => {
-    // 	var navigator = StackNavigator.apply(null, arguments);
-    // 	navigator.router.getStateForAction = navigateOnce(navigator.router.getStateForAction);
-    // 	return navigator;
-    // }
-
-    componentWillMount(){
-            console.log('===============componentWillMount=====');
+    clearLogOutUsername = () => {
+        this.setState({ message: '' });
     }
 
-    componentWillReceiveProps() {
-            console.log('rerender here')
-            //this.yourFunction()
-            //this.setState({})
-        }
+    clearLogOutPassword = () => {
+        this.setState({ message: '' });
+    }
+
+    _onLogoutPress = () => {
+
+        this.setState({ isLoggingIn: false, message: 'LoggedIn' });
+
+        this.clearLogOutUsername();
+        this.clearLogOutPassword();
+    }
 
     render() {
       const {navigate} = this.props;
-      console.log('From Mother:', navigate);
-      console.log(this.state.isLoggingIn);
-      console.log('===============Login=====');
-      //const { navigate } = this.props.navigation;
-      console.log(this.router);
         return (
           <ScrollView style={styles.loginScrollViewText} >
           {!this.state.message && (
@@ -131,10 +125,20 @@ export default class Login extends React.Component {
             )}
             {!!this.state.message && (
               <View>
+              <View style={{flex: 1, flexDirection: 'row'}}>
               <Text
-                style={{fontSize: 14, color: 'red', padding: 5}}>
-                {this.state.message}
+                style={{flex: 0,fontSize: 27}}>
+                Welcome
               </Text>
+              <Text style={{flex: 1,fontSize: 17,paddingTop:10,marginLeft:5}}>{this.state.message}</Text>
+              </View>
+              <View style={styles.logOutSubmitBtnView}>
+              <Button
+                      style={styles.logOutSubmitBtnView}
+                      onPress={this._onLogoutPress}
+                      title="Logout"
+                  />
+              </View>
               </View>
             )}
             </ScrollView>
@@ -160,6 +164,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
   },
   loginSubmitBtn: {
+    color: 'blue',
+    fontWeight: 'bold'
+  },
+  logOutSubmitBtnView: {
+    flexDirection: 'row-reverse',
+  },
+  logOutSubmitBtn: {
     color: 'blue',
     fontWeight: 'bold'
   },
