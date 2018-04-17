@@ -137,7 +137,7 @@ export default class Login extends React.Component {
               </View>
               <View style={styles.logOutSubmitBtnView}>
               <Button
-                      style={styles.logOutSubmitBtnView}
+                      style={styles.logOutSubmitBtn}
                       onPress={this._onLogoutPress}
                       title="Logout"
                   />

@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  Button,
   TouchableOpacity,
   Dimensions,
   View,
@@ -13,19 +14,29 @@ import { WebBrowser } from 'expo';
 
 import { MonoText, HercText } from '../components/StyledText';
 
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
     title: 'Work Order',
   };
 
-  // <Image
-  //   source={
-  //     __DEV__
-  //       ? require('../assets/images/robot-dev.png')
-  //       : require('../assets/images/robot-prod.png')
-  //   }
-  //   style={styles.welcomeImage}
-  // />
+  state = {
+      getWorkOrder: '',
+      workOrderStatus: '',
+      message: ''
+  }
+
+  constructor(props) {
+      super(props);
+      this._fetchWorkOrder = this._fetchWorkOrder.bind(this);
+      //this.navigate = this.props.navigation.navigate;
+  }
+
+  _fetchWorkOrder = () => {
+
+    this.setState({ getWorkOrder: 'fetch Work Order' });
+  }
 
   getSize() {
       return {
@@ -40,6 +51,7 @@ export default class HomeScreen extends React.Component {
     return (
       <View style={styles.container}>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+          <View>
           <Image
             style={{width: this.getSize().width, height: 85, marginTop:-30}}
             source={require('../assets/images/Logo_LaunchPad.png')}
@@ -48,65 +60,28 @@ export default class HomeScreen extends React.Component {
             <HercText style={styles.omraText}>Omra</HercText>
             <HercText style={styles.omraTagText}>(perfection can only be achieved by accurate review system)</HercText>
           </View>
-          <View style={styles.getStartedContainer}>
-            {this._maybeRenderDevelopmentModeWarning()}
-
-            <Text style={styles.getStartedText}>Get started by opening</Text>
-
-            <View style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
-              <MonoText style={styles.codeHighlightText}>screens/HomeScreen.js</MonoText>
+          {!this.state.getWorkOrder && (
+          <KeyboardAwareScrollView>
+            <View>
+              <View style={styles.getWorkOrderBtnView}>
+              <Button
+                    style={styles.getWorkOrderBtn}
+                    onPress={this._fetchWorkOrder}
+                    title="scan WorkOrder"
+                    color='white'
+                    fontWeight='bold'
+                />
+              </View>
             </View>
-
-            <Text style={styles.getStartedText}>
-              Work Order:
-            </Text>
-          </View>
-
-          <View style={styles.helpContainer}>
-            <TouchableOpacity onPress={this._handleHelpPress} style={styles.helpLink}>
-              <Text style={styles.helpLinkText}>Help, it didn’t automatically reload!</Text>
-            </TouchableOpacity>
+            </KeyboardAwareScrollView>
+            )}
           </View>
         </ScrollView>
-
         <View style={styles.tabBarInfoContainer}>
         </View>
       </View>
     );
   }
-
-  _maybeRenderDevelopmentModeWarning() {
-    if (__DEV__) {
-      const learnMoreButton = (
-        <Text onPress={this._handleLearnMorePress} style={styles.helpLinkText}>
-          Learn more
-        </Text>
-      );
-
-      return (
-        <Text style={styles.developmentModeText}>
-          Development mode is enabled, your app will be slower but you can use useful development
-          tools. {learnMoreButton}
-        </Text>
-      );
-    } else {
-      return (
-        <Text style={styles.developmentModeText}>
-          You are not in development mode, your app will run at full speed.
-        </Text>
-      );
-    }
-  }
-
-  _handleLearnMorePress = () => {
-    WebBrowser.openBrowserAsync('https://docs.expo.io/versions/latest/guides/development-mode');
-  };
-
-  _handleHelpPress = () => {
-    WebBrowser.openBrowserAsync(
-      'https://docs.expo.io/versions/latest/guides/up-and-running.html#can-t-see-your-changes'
-    );
-  };
 }
 
 const styles = StyleSheet.create({
@@ -114,12 +89,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  developmentModeText: {
-    marginBottom: 20,
-    color: 'rgba(0,0,0,0.4)',
-    fontSize: 14,
-    lineHeight: 19,
-    textAlign: 'center',
+  getWorkOrderBtnView: {
+    backgroundColor: 'blue',
+  },
+  getWorkOrderBtn: {
+    color: 'blue',
+    fontWeight: 'bold'
   },
   contentContainer: {
     paddingTop: 30,
@@ -135,16 +110,6 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     marginTop: 3,
     marginLeft: -10,
-  },
-  getStartedContainer: {
-    alignItems: 'center',
-    marginHorizontal: 50,
-  },
-  homeScreenFilename: {
-    marginVertical: 7,
-  },
-  codeHighlightText: {
-    color: 'rgba(96,100,109, 0.8)',
   },
   omraText: {
     fontWeight: 'bold',
@@ -169,17 +134,6 @@ const styles = StyleSheet.create({
     }),
     backgroundColor: '#fbfbfb',
   },
-  codeHighlightContainer: {
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 3,
-    paddingHorizontal: 4,
-  },
-  getStartedText: {
-    fontSize: 17,
-    color: 'rgba(96,100,109, 1)',
-    lineHeight: 24,
-    textAlign: 'center',
-  },
   tabBarInfoContainer: {
     position: 'absolute',
     bottom: 0,
@@ -199,24 +153,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fbfbfb',
     paddingVertical: 2,
-  },
-  tabBarInfoText: {
-    fontSize: 17,
-    color: 'rgba(96,100,109, 1)',
-    textAlign: 'center',
-  },
-  navigationFilename: {
-    marginTop: 5,
-  },
-  helpContainer: {
-    marginTop: 15,
-    alignItems: 'center',
-  },
-  helpLink: {
-    paddingVertical: 15,
-  },
-  helpLinkText: {
-    fontSize: 14,
-    color: '#2e78b7',
   },
 });
