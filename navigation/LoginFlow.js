@@ -30,8 +30,8 @@ export default class LoginFlow extends React.Component {
 
   render() {
     // If dimensions is defined, render the real view otherwise the dummy view
-    const {navigate} = this.props;
-    console.log('From LoginFlow:', navigate);
+    const {navigation} = this.props;
+    console.log('From LoginFlow:', navigation);
 
     return (
       <View style={styles.container}>
@@ -46,7 +46,8 @@ export default class LoginFlow extends React.Component {
           </View>
           <View style={styles.getStartedContainer}>
             <Login
-              screenProps={{ rootNavigation: this.props.navigation }}
+              navigation={this.props.navigation}
+              allFlags={this.props.screenProps}
               />
           </View>
         </ScrollView>

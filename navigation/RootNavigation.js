@@ -29,7 +29,9 @@ export default class RootNavigator extends React.Component {
       }
 
   render() {
-    return <RootStackNavigator screenProps={{ rootNavigation: this.props.navigation }}
+    console.log(this.props);
+    return <RootStackNavigator
+      screenProps={this.props}
       onNavigationStateChange={(prevState, currentState) => {
           // If you want to ignore the state changed from `DrawerNavigator`, use this:
           /*

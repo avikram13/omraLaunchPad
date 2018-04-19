@@ -7,6 +7,7 @@ import {
   Text,
   Button,
   TouchableOpacity,
+  InteractionManager,
   Dimensions,
   View,
 } from 'react-native';
@@ -24,14 +25,40 @@ export default class HomeScreen extends React.Component {
   state = {
       getWorkOrder: '',
       workOrderStatus: '',
-      message: ''
+      message: '',
+      isLoggedIn: false
   }
 
   constructor(props) {
+    console.log('Home Screen =============>');
       super(props);
       this._fetchWorkOrder = this._fetchWorkOrder.bind(this);
       //this.navigate = this.props.navigation.navigate;
   }
+
+// static getDerivedStateFromProps(nextProps, prevState){
+//   console.log('Home Screen =============>');
+//   return null;
+// }
+
+componentDidUpdate(){
+  // console.log('Home Screen  componentDidUpdate =============>');
+  // console.log('Home Screen  componentDidUpdate =============>');
+  // console.log('getFlagValue: ' + this.props.screenProps.getFlagValue());
+  // console.log(this.props.screenProps.flags.userLogInFlag);
+
+  // InteractionManager.runAfterInteractions(() => {
+  //           this.setState({ isLoggedIn: this.props.screenProps.getFlagValue() });
+  // });
+}
+
+  // componentWillReceiveProps(nextProps){
+  //   console.log('Angesh =============>');
+  //   console.log(nextProps.screenProps.flags.userLogInFlag);
+  //   if(nextProps.screenProps.flags.userLogInFlag !== this.props.screenProps.flags.userLogInFlag){
+  //     this.setState({isLoggedIn:nextProps.screenProps.flags.userLogInFlag});
+  //   }
+  // }
 
   _fetchWorkOrder = () => {
 
@@ -46,11 +73,13 @@ export default class HomeScreen extends React.Component {
   }
 
   render() {
+    console.log('Home Screen render =============>');
     // If dimensions is defined, render the real view otherwise the dummy view
-
+    //this.setState({ isLoggedIn: this.props.screenProps.flags.userLogInFlag});
     return (
       <View style={styles.container}>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+          <View>
           <View>
           <Image
             style={{width: this.getSize().width, height: 85, marginTop:-30}}
@@ -60,7 +89,7 @@ export default class HomeScreen extends React.Component {
             <HercText style={styles.omraText}>Omra</HercText>
             <HercText style={styles.omraTagText}>(perfection can only be achieved by accurate review system)</HercText>
           </View>
-          {!this.state.getWorkOrder && (
+          {!!this.props.screenProps.flags.userLogInFlag && (
           <KeyboardAwareScrollView>
             <View>
               <View style={styles.getWorkOrderBtnView}>
@@ -74,7 +103,18 @@ export default class HomeScreen extends React.Component {
               </View>
             </View>
             </KeyboardAwareScrollView>
-            )}
+          )}
+          {!this.props.screenProps.flags.userLogInFlag && (
+          <KeyboardAwareScrollView>
+            <View>
+            <Text
+              style={{flex: 0,fontSize: 27, marginLeft: 30}}>
+              You need to log in:
+            </Text>
+            </View>
+            </KeyboardAwareScrollView>
+          )}
+          </View>
           </View>
         </ScrollView>
         <View style={styles.tabBarInfoContainer}>

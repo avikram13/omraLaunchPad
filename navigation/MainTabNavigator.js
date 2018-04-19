@@ -25,25 +25,25 @@ export default TabNavigator(
   },
   {
 
-    navigationOptions: ({ navigation, screenProps }) => ({
+    navigationOptions: ({ navigation, screenProps}) => ({
       tabBarOnPress: (scene, jumpToIndex) => {
-          console.log('onPress:', scene.scene.index);
+//          console.log('onPress:', scene.scene.index);
           scene.jumpToIndex(scene.scene.index);
         },
       tabBarIcon: ({ focused }) => {
-        console.log('Angesh Vikram');
-        console.log(navigation.state);
-        console.log(focused);
+        // console.log('Angesh Vikram');
+        // console.log(navigation.state);
+        // console.log(focused);
         const { routeName } = navigation.state;
         let iconName;
         switch (routeName) {
           case 'Login':
-            console.log('Login');
+            // console.log('Login');
             iconName =
               Platform.OS === 'ios' ? `ios-options${focused ? '' : '-outline'}` : 'md-options';
               break;
           case 'WorkOrder':
-            console.log('WorkOrder');
+            // console.log('WorkOrder');
             iconName =
               Platform.OS === 'ios'
                 ? `ios-information-circle${focused ? '' : '-outline'}`
@@ -55,7 +55,7 @@ export default TabNavigator(
 
         return (
           <View >
-            <Text > Angesh </Text>
+            <Text > Omra </Text>
           </View>
         );
       },

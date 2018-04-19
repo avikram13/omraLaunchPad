@@ -5,10 +5,39 @@ import { Ionicons } from '@expo/vector-icons';
 import RootNavigation from './navigation/RootNavigation';
 import MainTabNavigator from './navigation/MainTabNavigator';
 
+flags = {
+  userLogInFlag:false
+};
+
 export default class App extends React.Component {
   state = {
     isLoadingComplete: false,
   };
+
+  constructor(props) {
+        super(props);
+        this.updateFlag  = this.updateFlag.bind(this);
+        this.getFlagValue  = this.getFlagValue.bind(this);
+        this.flags = {userLogInFlag:false}
+    }
+
+  // componentDidMount() {
+  //             //Define some variable in your component
+  //             this.flags = {userLogInFlag:false};
+  // }
+
+  updateFlag(_flagVal){
+    console.log('updateFlag: ' + _flagVal);
+    this.setState({userLogInFlag:_flagVal});
+    this.flags.userLogInFlag = _flagVal;
+    console.log('We pass argument from Child to Parent: ' + this.flags.userLogInFlag);
+  }
+
+  getFlagValue(){
+    console.log('getFlagValue: ' + this.flags.userLogInFlag);
+    return this.flags;
+  }
+
 
   render() {
     if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen) {
@@ -23,7 +52,10 @@ export default class App extends React.Component {
       return (
         <View style={styles.container}>
           {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-          <RootNavigation />
+          <RootNavigation
+            flags = {this.flags}
+            updateFlag = {this.updateFlag.bind(this)}
+            getFlagValue = {this.getFlagValue.bind(this)} />
         </View>
       );
     }

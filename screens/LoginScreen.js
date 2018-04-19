@@ -47,33 +47,38 @@ export default class Login extends React.Component {
             password: this.state.password,
             grant_type: 'password'
         };
-        var proceed = false;
+        this.props.allFlags.updateFlag(true);
         this.setState({ isLoggingIn: true });
 
-        this.props.screenProps.rootNavigation.navigate('WorkOrder');
+        this.props.navigation.navigate('WorkOrder');
     }
 
     clearUsername = () => {
+        //this.props.allFlags.updateFlag(false);
         this._username.setNativeProps({ text: '' });
         this.setState({ message: '' });
     }
 
     clearPassword = () => {
+      //this.props.allFlags.updateFlag(false);
         this._password.setNativeProps({ text: '' });
         this.setState({ message: '' });
     }
 
     clearLogOutUsername = () => {
+      //this.props.allFlags.updateFlag(false);
         this.setState({ message: '' });
     }
 
     clearLogOutPassword = () => {
+      //this.props.allFlags.updateFlag(false);
         this.setState({ message: '' });
     }
 
     _onLogoutPress = () => {
 
         this.setState({ isLoggingIn: false, message: 'LoggedIn' });
+        this.props.allFlags.updateFlag(false);
 
         this.clearLogOutUsername();
         this.clearLogOutPassword();
