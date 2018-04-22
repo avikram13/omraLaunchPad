@@ -63,12 +63,15 @@ getWorkOrderData () {
       hasCameraPermission: null,
       lastScannedUrl: null,
       isRunning: false,
+      isBlocked: false,
       mainTimer: null,
       mainTime: null,
       totalIdelTimer: null,
       totalIdelTime: null,
       idelTimer: null,
       idelTime: null,
+      blockTimer: null,
+      blockTime: null,
       totalTimer: null,
       totalTime: null,
       StartTimer: null,
@@ -150,6 +153,21 @@ getWorkOrderData () {
     return hours+':'+minutes+':'+seconds;
   }
 
+  handleBlocked(){
+    clearInterval(this.interval);
+    clearInterval(this.idelInterval);
+
+    this.setState({ isBlocked: true });
+  }
+
+  handleUnblocked(){
+    clearInterval(this.interval);
+    clearInterval(this.idelInterval);
+
+    this.setState({ isBlocked: false });
+    this.handlePause();
+  }
+
   handlePause(){
 
         let { isRunning , firstTime, mainTimer , startTimer} = this.state;
@@ -160,36 +178,6 @@ getWorkOrderData () {
            this.setState({startTimer: new Date()});
          }
 
-
-        // //      this.setState({ isRunning: !isRunning });
-        // if(isRunning){
-        //   clearInterval(this.interval);
-        //   this.setState({ isRunning: false });
-        //
-        //   var end = Moment.utc(new Date());
-        //   var start = Moment.utc(this.state.mainTimerStart);
-        //
-        //   var diff = Moment(end).unix() - Moment(start).unix();
-        //   this.setState({ mainTime: (diff + this.state.mainTime)});
-        //
-        //   this.idelInterval = setInterval (() => {
-        //
-        //     // Main
-        //     var end = Moment.utc(new Date());
-        //     var start = Moment.utc(this.state.startTimer);
-        //
-        //     var totalTimeDiff = Moment(end).unix() - Moment(start).unix();
-        //     this.setState({ totalTime: totalTimeDiff});
-        //     this.setState({ totalTimer: this.toHHMMSS(totalTimeDiff) });
-        //
-        //      var idelTimeDiff = totalTimeDiff - this.state.mainTime;
-        //      this.setState({ totalIdelTimer: idelTimeDiff});
-        //      this.setState({ idelTimer: this.toHHMMSS(idelTimeDiff) });
-        //
-        //   },1000);
-        //
-        // }
-        // else{
           clearInterval(this.idelInterval);
           this.setState({
             mainTimerStart: new Date(),
@@ -256,36 +244,6 @@ getWorkOrderData () {
                this.setState({ idelTimer: this.toHHMMSS(idelTimeDiff) });
 
             },1000);
-
-          // }
-          // else{
-          //   clearInterval(this.idelInterval);
-          //   this.setState({
-          //     mainTimerStart: new Date(),
-          //     isRunning: true
-          //    });
-          //
-          //   this.interval = setInterval (() => {
-          //
-          //     // Main
-          //     var end = Moment.utc(new Date());
-          //     var start = Moment.utc(this.state.mainTimerStart);
-          //     var startT = Moment.utc(this.state.startTimer);
-          //
-          //     var totalTimeDiff = Moment(end).unix() - Moment(startT).unix();
-          //     this.setState({ totalTime: totalTimeDiff});
-          //     this.setState({ totalTimer: this.toHHMMSS(totalTimeDiff) });
-          //
-          //     var currentTimediff = Moment(end).unix() - Moment(start).unix();
-          //     currentTimediff = currentTimediff + this.state.mainTime;
-          //     this.setState({ mainTimer: this.toHHMMSS(currentTimediff) });
-          //
-          //      var idelTimeDiff = totalTimeDiff - currentTimediff;
-          //      this.setState({ totalIdelTimer: idelTimeDiff});
-          //      this.setState({ idelTimer: this.toHHMMSS(idelTimeDiff) });
-          //
-          //   },1000);
-          // }
       }
 
   // End Timer
@@ -296,22 +254,7 @@ getWorkOrderData () {
     clearInterval(this.idelInterval);
     console.log("==============> clear all Flags");
     let initVal = {
-        getWorkOrder: '',
-        workOrderDetails: this.getWorkOrderData(),
-        workOrderStatus: '',
-        message: '',
-        isLoggedIn: false,
-        workeOrederFetched: true,
-        hasCameraPermission: null,
-        lastScannedUrl: null,
-        isRunning: false,
-        mainTimer: null,
-        mainTime: null,
         totalTimer: null,
-        totalTime: null,
-        StartTimer: null,
-        firstTime: false,
-        mainTimerStart: null,
     } /*true or false*/
     if(initVal.totalTimer !== this.state.totalTimer){
       this.state.getWorkOrder = '';
@@ -323,6 +266,7 @@ getWorkOrderData () {
       this.state.hasCameraPermission= null;
       this.state.lastScannedUrl= null;
       this.state.isRunning= false;
+      this.state.isBlocked= false;
       this.state.mainTimer= null;
       this.state.mainTime= null;
       this.state.totalTimer= null;
@@ -334,7 +278,8 @@ getWorkOrderData () {
       this.state.totalIdelTime= null;
       this.state.idelTimer= null;
       this.state.idelTime= null;
-
+      this.state.blockTimer= null;
+      this.state.blockTime= null;
     }
     return (<View></View>);
   }
@@ -362,69 +307,100 @@ _renderWorkOrder(){
         <Text style={styles.homeScreenWSTitleTexts}>
             Work started at {Moment(this.state.startTimer).format('H:mm:ss').toString()} on ({Moment(this.state.startTimer).format('DD/MM/YYYY').toString()})
         </Text>
-        {!!this.state.isRunning && (
+        {!this.state.isBlocked && (
           <View>
-            <View>
-              <Text style={styles.homeScreenWTimeTexts}>
-                Wrench Time
-              </Text>
-              <View style={styles.pauseTimerImage}>
-                <Text style={styles.homeScreenWTimerTexts}>
-                  <Text >{this.state.mainTimer || '00:00:00'}</Text>
-                </Text>
-                <View style={styles.homeScreenWTimeImage}>
-                  <TouchableOpacity onPress={this.handlePlay.bind(this)}>
-                    <InlineImage
-                      style={styles.Pauseimage}
-                      source={require('../assets/images/pause.png')}
+            {!!this.state.isRunning && (
+              <View>
+                <View>
+                  <Text style={styles.homeScreenWTimeTexts}>
+                    Wrench Time
+                  </Text>
+                  <View style={styles.pauseTimerImage}>
+                    <Text style={styles.homeScreenWTimerTexts}>
+                      <Text >{this.state.mainTimer || '00:00:00'}</Text>
+                    </Text>
+                    <View style={styles.homeScreenWTimeImage}>
+                      <TouchableOpacity onPress={this.handlePlay.bind(this)}>
+                        <InlineImage
+                          style={styles.Pauseimage}
+                          source={require('../assets/images/pause.png')}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+                <View>
+                  <Text style={styles.homeScreenWTimeTexts}>
+                    Idle Time
+                  </Text>
+                  <Text style={styles.homeScreenITimerTexts}>
+                    <Text >{this.state.idelTimer || '00:00:00'}</Text>
+                  </Text>
+                </View>
+                <View>
+                  <View style={styles.blockageBtn}>
+                    <Button
+                      title="! BLOCKED"
+                      color='white'
+                      onPress={this.handleBlocked.bind(this)}
                     />
-                  </TouchableOpacity>
+                  </View>
+                  <View style={styles.DoneBtn}>
+                    <Button
+                      title="Done"
+                      color='white'
+                      onPress={this._fetchMyWorkOrder}
+                    />
+                  </View>
                 </View>
               </View>
-            </View>
-            <View>
-              <Text style={styles.homeScreenWTimeTexts}>
-                Idle Time
-              </Text>
-              <Text style={styles.homeScreenITimerTexts}>
-                <Text >{this.state.idelTimer || '00:00:00'}</Text>
-              </Text>
-            </View>
-            <View>
-              <View style={styles.blockageBtn}>
-                <Button
-                  title="! BLOCKED"
-                  color='white'
-                  onPress={this._fetchMyWorkOrder}
-                />
+            )}
+            {!this.state.isRunning && (
+              <View>
+                <View>
+                  <Text style={styles.homeScreenITimeTexts}>
+                    Idel Timer
+                  </Text>
+                  <Text style={styles.homeScreenIdleTimerTexts}>
+                    <Text >{this.state.idelTimer || '00:00:00'}</Text>
+                  </Text>
+                  <View style={styles.homeScreenPlayImage}>
+                    <TouchableOpacity onPress={this.handlePause.bind(this)}>
+                      <InlineImage
+                        style={styles.PlayImage}
+                        source={require('../assets/images/play.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
-              <View style={styles.DoneBtn}>
-                <Button
-                  title="Done"
-                  color='white'
-                  onPress={this._fetchMyWorkOrder}
-                />
-              </View>
-            </View>
+            )}
           </View>
         )}
-        {!this.state.isRunning && (
+        {!!this.state.isBlocked && (
           <View>
             <View>
-              <Text style={styles.homeScreenITimeTexts}>
-                Idel Timer
+              <InlineImage
+                style={styles.blockedImage}
+                source={require('../assets/images/blocked.png')}
+              />
+            </View>
+            <View>
+              <Text style={styles.homeScreenBTimeTexts}>
+                Blocked Timer
               </Text>
-                <Text style={styles.homeScreenIdleTimerTexts}>
-                  <Text >{this.state.idelTimer || '00:00:00'}</Text>
-                </Text>
-                <View style={styles.homeScreenPlayImage}>
-                  <TouchableOpacity onPress={this.handlePause.bind(this)}>
-                    <InlineImage
-                      style={styles.PlayImage}
-                      source={require('../assets/images/play.png')}
-                    />
-                  </TouchableOpacity>
+              <Text style={styles.homeScreenIdleTimerTexts}>
+                <Text >{this.state.idelTimer || '00:00:00'}</Text>
+              </Text>
+              <View >
+                <View style={styles.continueBtn}>
+                  <Button
+                    title="CONTINUE"
+                    color='white'
+                    onPress={this.handleUnblocked.bind(this)}
+                  />
                 </View>
+              </View>
             </View>
           </View>
         )}
@@ -561,11 +537,16 @@ _renderWorkOrder(){
 }
 
 const styles = StyleSheet.create({
+  continueBtn:{
+    backgroundColor: 'green',
+    alignSelf: 'center',
+    width: Dimensions.get('window').width/3,
+    borderRadius: 5,
+  },
   blockageBtn:{
     marginTop: 20,
     backgroundColor: 'red',
     alignSelf: 'center',
-    color: 'white',
     width: Dimensions.get('window').width/3,
     borderRadius: 5,
   },
@@ -573,7 +554,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     backgroundColor: 'green',
     alignSelf: 'center',
-    color: 'white',
     width: Dimensions.get('window').width/2,
     borderRadius: 5,
   },
@@ -596,6 +576,13 @@ const styles = StyleSheet.create({
     marginTop:-30,
     top:-30,
     right: 30,
+  },
+  blockedImage:{
+    width: 160,
+    height: 160,
+    alignSelf:'center',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   PlayImage:{
     width: 100,
@@ -713,6 +700,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'blue',
     fontSize: 80
+  },
+  homeScreenBTimeTexts:{
+    color: '#808080',
+    marginTop: 20,
+    left: -50,
+    alignSelf: 'center',
   },
   homeScreenITimeTexts:{
     color: '#808080',
