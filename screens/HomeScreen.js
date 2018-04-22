@@ -132,21 +132,6 @@ getWorkOrderData () {
     }
   };
 
-  // Start Timer
-    _renderTimers(){
-      return (
-        <View>
-        <View style={styles.timerWrapper}>
-        <View style={styles.timerWrapperInner}>
-        <Text>{Moment(this.state.startTimer).format('H:mm:ss').toString()}</Text>
-        <Text>{this.state.totalTimer || '00:00:00'}</Text>
-        <Text style={styles.mainTimer}>{this.state.mainTimer || '00:00:00'}</Text>
-        </View>
-        </View>
-        </View>
-      );
-    }
-
     _getTime() {
     var currentTime = Moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     console.log(dateTime);
@@ -165,7 +150,7 @@ getWorkOrderData () {
     return hours+':'+minutes+':'+seconds;
   }
 
-  handleStartStop(){
+  handlePause(){
 
         let { isRunning , firstTime, mainTimer , startTimer} = this.state;
 
@@ -176,48 +161,41 @@ getWorkOrderData () {
          }
 
 
-        //      this.setState({ isRunning: !isRunning });
-        if(isRunning){
-          clearInterval(this.interval);
-          this.setState({ isRunning: false });
-
-          var end = Moment.utc(new Date());
-          var start = Moment.utc(this.state.mainTimerStart);
-
-          var diff = Moment(end).unix() - Moment(start).unix();
-          this.setState({ mainTime: (diff + this.state.mainTime)});
-
-          this.idelInterval = setInterval (() => {
-
-            // Main
-            var end = Moment.utc(new Date());
-            var start = Moment.utc(this.state.startTimer);
-
-            var totalTimeDiff = Moment(end).unix() - Moment(start).unix();
-            this.setState({ totalTime: totalTimeDiff});
-            this.setState({ totalTimer: this.toHHMMSS(totalTimeDiff) });
-
-             var idelTimeDiff = totalTimeDiff - this.state.mainTime;
-             this.setState({ totalIdelTimer: idelTimeDiff});
-             this.setState({ idelTimer: this.toHHMMSS(idelTimeDiff) });
-
-          },1000);
-
-        }
-        else{
+        // //      this.setState({ isRunning: !isRunning });
+        // if(isRunning){
+        //   clearInterval(this.interval);
+        //   this.setState({ isRunning: false });
+        //
+        //   var end = Moment.utc(new Date());
+        //   var start = Moment.utc(this.state.mainTimerStart);
+        //
+        //   var diff = Moment(end).unix() - Moment(start).unix();
+        //   this.setState({ mainTime: (diff + this.state.mainTime)});
+        //
+        //   this.idelInterval = setInterval (() => {
+        //
+        //     // Main
+        //     var end = Moment.utc(new Date());
+        //     var start = Moment.utc(this.state.startTimer);
+        //
+        //     var totalTimeDiff = Moment(end).unix() - Moment(start).unix();
+        //     this.setState({ totalTime: totalTimeDiff});
+        //     this.setState({ totalTimer: this.toHHMMSS(totalTimeDiff) });
+        //
+        //      var idelTimeDiff = totalTimeDiff - this.state.mainTime;
+        //      this.setState({ totalIdelTimer: idelTimeDiff});
+        //      this.setState({ idelTimer: this.toHHMMSS(idelTimeDiff) });
+        //
+        //   },1000);
+        //
+        // }
+        // else{
           clearInterval(this.idelInterval);
           this.setState({
             mainTimerStart: new Date(),
             isRunning: true
            });
 
-          // var end = Moment.utc(new Date());
-          // var start = Moment.utc(this.state.idelTimerStart);
-          //
-          // var diff = Moment(end).unix() - Moment(start).unix();
-          // this.setState({ idelTime: (diff + this.state.idelTime)});
-
-          ///
           this.interval = setInterval (() => {
 
             // Main
@@ -238,65 +216,78 @@ getWorkOrderData () {
              this.setState({ idelTimer: this.toHHMMSS(idelTimeDiff) });
 
           },1000);
-        }
-
-        // clearInterval(this.interval);
-
-
-
-         // this.idelInterval = setInterval (() => {
-         //   var end = Moment.utc(new Date());
-         //   var start = Moment.utc(this.state.mainTimerStart);
-         //   var startT = Moment.utc(this.state.startTimer);
-         //
-         //   var totalTimeDiff = Moment(end).unix() - Moment(startT).unix();
-         //   this.setState({ totalTime: totalTimeDiff});
-         //   this.setState({ totalTimer: this.toHHMMSS(totalTimeDiff) });
-         //
-         //   var currentTimediff = Moment(end).unix() - Moment(start).unix();
-         //   currentTimediff = currentTimediff + this.state.mainTime;
-         //   this.setState({ mainTimer: this.toHHMMSS(currentTimediff) });
-         //
-         //    var idelTimeDiff = totalTimeDiff - currentTimediff;
-         //    this.setState({ totalIdelTimer: idelTimeDiff});
-         //    this.setState({ idelTimer: this.toHHMMSS(idelTimeDiff) });
-         // });
-
-         // this.interval = setInterval (() => {
-         //
-         //   // Main
-         //   var end = Moment.utc(new Date());
-         //   var start = Moment.utc(this.state.mainTimerStart);
-         //   var startT = Moment.utc(this.state.startTimer);
-         //
-         //   var totalTimeDiff = Moment(end).unix() - Moment(startT).unix();
-         //   this.setState({ totalTime: totalTimeDiff});
-         //   this.setState({ totalTimer: this.toHHMMSS(totalTimeDiff) });
-         //
-         //   var currentTimediff = Moment(end).unix() - Moment(start).unix();
-         //   currentTimediff = currentTimediff + this.state.mainTime;
-         //   this.setState({ mainTimer: this.toHHMMSS(currentTimediff) });
-         //
-         //    var idelTimeDiff = totalTimeDiff - currentTimediff;
-         //    this.setState({ totalIdelTimer: idelTimeDiff});
-         //    this.setState({ idelTimer: this.toHHMMSS(idelTimeDiff) });
-         //
-         //
-         // },1000);
+        // }
     }
 
-    _renderButtons(){
-      return (
-        <View style={styles.buttonWrapper}>
-        <TouchableHighlight
-          underlayColor='#777'
-          onPress={this.handleStartStop.bind(this)}
-          style={styles.timerButtonx}>
-          <Text style={[styles.startBtn, this.state.isRunning && styles.stopBtn]}>{this.state.isRunning? 'Pause': 'Start'}</Text>
-        </TouchableHighlight>
-        </View>
-      );
-    }
+    handlePlay(){
+
+          let { isRunning , firstTime, mainTimer , startTimer} = this.state;
+
+           if(!this.state.firstTime) { // first time
+             // we need to save key for the next time
+             this.setState({firstTime: true});
+             this.setState({startTimer: new Date()});
+           }
+
+
+          // //      this.setState({ isRunning: !isRunning });
+          // if(isRunning){
+            clearInterval(this.interval);
+            this.setState({ isRunning: false });
+
+            var end = Moment.utc(new Date());
+            var start = Moment.utc(this.state.mainTimerStart);
+
+            var diff = Moment(end).unix() - Moment(start).unix();
+            this.setState({ mainTime: (diff + this.state.mainTime)});
+
+            this.idelInterval = setInterval (() => {
+
+              // Main
+              var end = Moment.utc(new Date());
+              var start = Moment.utc(this.state.startTimer);
+
+              var totalTimeDiff = Moment(end).unix() - Moment(start).unix();
+              this.setState({ totalTime: totalTimeDiff});
+              this.setState({ totalTimer: this.toHHMMSS(totalTimeDiff) });
+
+               var idelTimeDiff = totalTimeDiff - this.state.mainTime;
+               this.setState({ totalIdelTimer: idelTimeDiff});
+               this.setState({ idelTimer: this.toHHMMSS(idelTimeDiff) });
+
+            },1000);
+
+          // }
+          // else{
+          //   clearInterval(this.idelInterval);
+          //   this.setState({
+          //     mainTimerStart: new Date(),
+          //     isRunning: true
+          //    });
+          //
+          //   this.interval = setInterval (() => {
+          //
+          //     // Main
+          //     var end = Moment.utc(new Date());
+          //     var start = Moment.utc(this.state.mainTimerStart);
+          //     var startT = Moment.utc(this.state.startTimer);
+          //
+          //     var totalTimeDiff = Moment(end).unix() - Moment(startT).unix();
+          //     this.setState({ totalTime: totalTimeDiff});
+          //     this.setState({ totalTimer: this.toHHMMSS(totalTimeDiff) });
+          //
+          //     var currentTimediff = Moment(end).unix() - Moment(start).unix();
+          //     currentTimediff = currentTimediff + this.state.mainTime;
+          //     this.setState({ mainTimer: this.toHHMMSS(currentTimediff) });
+          //
+          //      var idelTimeDiff = totalTimeDiff - currentTimediff;
+          //      this.setState({ totalIdelTimer: idelTimeDiff});
+          //      this.setState({ idelTimer: this.toHHMMSS(idelTimeDiff) });
+          //
+          //   },1000);
+          // }
+      }
+
   // End Timer
 
   updateAllFlag(){
@@ -382,7 +373,7 @@ _renderWorkOrder(){
                   <Text >{this.state.mainTimer || '00:00:00'}</Text>
                 </Text>
                 <View style={styles.homeScreenWTimeImage}>
-                  <TouchableOpacity onPress={this.handleStartStop.bind(this)}>
+                  <TouchableOpacity onPress={this.handlePlay.bind(this)}>
                     <InlineImage
                       style={styles.Pauseimage}
                       source={require('../assets/images/pause.png')}
@@ -427,7 +418,7 @@ _renderWorkOrder(){
                   <Text >{this.state.idelTimer || '00:00:00'}</Text>
                 </Text>
                 <View style={styles.homeScreenPlayImage}>
-                  <TouchableOpacity onPress={this.handleStartStop.bind(this)}>
+                  <TouchableOpacity onPress={this.handlePause.bind(this)}>
                     <InlineImage
                       style={styles.PlayImage}
                       source={require('../assets/images/play.png')}
