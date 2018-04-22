@@ -56,7 +56,7 @@ getWorkOrderData () {
   state = {
       getWorkOrder: '',
       workOrderDetails: this.getWorkOrderData(),
-      workOrderStatus: '',
+      workOrderStatus: 'Created',
       message: '',
       isLoggedIn: false,
       workeOrederFetched: true,
@@ -163,6 +163,7 @@ getWorkOrderData () {
 
   handleBlocked(){
 
+    this.clearAllInterval();
     var endM = Moment.utc(new Date());
     var startM = Moment.utc(this.state.mainTimerStart);
 
@@ -174,9 +175,7 @@ getWorkOrderData () {
         startTimer: new Date(),
         isBlocked: true
     });
-
-    this.clearAllInterval();
-
+    this.setState({workOrderStatus: 'Blocked'});
 
     this.blockInterval = setInterval (() => {
       // Main
@@ -191,15 +190,15 @@ getWorkOrderData () {
 
   handleUnblocked(){
 
+    this.clearAllInterval();
     this.setState({ isBlocked: false });
+    this.setState({workOrderStatus: 'In Progress'});
 
     var end = Moment.utc(new Date());
     var start = Moment.utc(this.state.blockTimerStart);
 
     var diff = Moment(end).unix() - Moment(start).unix();
     this.setState({ blockTime: (diff + this.state.blockTime)});
-
-    this.clearAllInterval();
 
     this.setState({
       mainTimerStart: new Date(),
@@ -228,6 +227,7 @@ getWorkOrderData () {
       this.setState({startTimer: new Date()});
     }
 
+    this.setState({workOrderStatus: 'In Progress'});
     this.setState({
       mainTimerStart: new Date(),
       isRunning: true
@@ -262,6 +262,10 @@ getWorkOrderData () {
       // we need to save key for the next time
       this.setState({firstTime: true});
       this.setState({startTimer: new Date()});
+      this.setState({workOrderStatus: 'Created'});
+    }
+    else{
+      this.setState({workOrderStatus: 'Pause'});
     }
 
     this.setState({
@@ -350,6 +354,9 @@ _renderWorkOrder(){
         </Text>
         <Text style={styles.homeScreenWSTitleTexts}>
             Work started at {Moment(this.state.startTimer).format('H:mm:ss').toString()} on ({Moment(this.state.startTimer).format('DD/MM/YYYY').toString()})
+        </Text>
+        <Text style={styles.homeScreenWSTitleTexts}>
+            Current Status: <Text style={styles.homeScreenTexts}>{this.state.workOrderStatus}</Text>
         </Text>
         {!this.state.isBlocked && (
           <View>
