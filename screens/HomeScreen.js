@@ -77,6 +77,8 @@ getWorkOrderData () {
       StartTimer: null,
       firstTime: false,
       mainTimerStart: null,
+      blockTimerStart: null,
+      idelTimerStart: null,
   }
 
   constructor(props) {
@@ -153,105 +155,145 @@ getWorkOrderData () {
     return hours+':'+minutes+':'+seconds;
   }
 
-  handleBlocked(){
+  clearAllInterval(){
     clearInterval(this.interval);
     clearInterval(this.idelInterval);
+    clearInterval(this.blockInterval);
+  }
 
-    this.setState({ isBlocked: true });
+  handleBlocked(){
+
+    var endM = Moment.utc(new Date());
+    var startM = Moment.utc(this.state.mainTimerStart);
+
+    var diffM = Moment(endM).unix() - Moment(startM).unix();
+    this.setState({ mainTime: (diffM + this.state.mainTime)});
+
+    this.setState({
+        blockTimerStart: new Date(),
+        startTimer: new Date(),
+        isBlocked: true
+    });
+
+    this.clearAllInterval();
+
+
+    this.blockInterval = setInterval (() => {
+      // Main
+      var end = Moment.utc(new Date());
+      var start = Moment.utc(this.state.blockTimerStart);
+
+      var currentTimediff = Moment(end).unix() - Moment(start).unix();
+      currentTimediff = currentTimediff + this.state.blockTime;
+      this.setState({ blockTimer: this.toHHMMSS(currentTimediff) });
+    },1000);
   }
 
   handleUnblocked(){
-    clearInterval(this.interval);
-    clearInterval(this.idelInterval);
 
     this.setState({ isBlocked: false });
-    this.handlePause();
+
+    var end = Moment.utc(new Date());
+    var start = Moment.utc(this.state.blockTimerStart);
+
+    var diff = Moment(end).unix() - Moment(start).unix();
+    this.setState({ blockTime: (diff + this.state.blockTime)});
+
+    this.clearAllInterval();
+
+    this.setState({
+      mainTimerStart: new Date(),
+      isRunning: true
+    });
+
+    this.interval = setInterval (() => {
+
+      // Main
+      var end = Moment.utc(new Date());
+      var start = Moment.utc(this.state.mainTimerStart);
+
+      var currentTimediff = Moment(end).unix() - Moment(start).unix();
+      currentTimediff = currentTimediff + this.state.mainTime;
+      this.setState({ mainTimer: this.toHHMMSS(currentTimediff) });
+
+    },1000);
   }
 
   handlePause(){
 
-        let { isRunning , firstTime, mainTimer , startTimer} = this.state;
-
-         if(!this.state.firstTime) { // first time
-           // we need to save key for the next time
-           this.setState({firstTime: true});
-           this.setState({startTimer: new Date()});
-         }
-
-          clearInterval(this.idelInterval);
-          this.setState({
-            mainTimerStart: new Date(),
-            isRunning: true
-           });
-
-          this.interval = setInterval (() => {
-
-            // Main
-            var end = Moment.utc(new Date());
-            var start = Moment.utc(this.state.mainTimerStart);
-            var startT = Moment.utc(this.state.startTimer);
-
-            var totalTimeDiff = Moment(end).unix() - Moment(startT).unix();
-            this.setState({ totalTime: totalTimeDiff});
-            this.setState({ totalTimer: this.toHHMMSS(totalTimeDiff) });
-
-            var currentTimediff = Moment(end).unix() - Moment(start).unix();
-            currentTimediff = currentTimediff + this.state.mainTime;
-            this.setState({ mainTimer: this.toHHMMSS(currentTimediff) });
-
-             var idelTimeDiff = totalTimeDiff - currentTimediff;
-             this.setState({ totalIdelTimer: idelTimeDiff});
-             this.setState({ idelTimer: this.toHHMMSS(idelTimeDiff) });
-
-          },1000);
-        // }
+    this.clearAllInterval();
+    if(!this.state.firstTime) { // first time
+       // we need to save key for the next time
+      this.setState({firstTime: true});
+      this.setState({startTimer: new Date()});
     }
 
-    handlePlay(){
+    this.setState({
+      mainTimerStart: new Date(),
+      isRunning: true
+    });
 
-          let { isRunning , firstTime, mainTimer , startTimer} = this.state;
+    var endI = Moment.utc(new Date());
+    var startI = Moment.utc(this.state.idelTimerStart);
 
-           if(!this.state.firstTime) { // first time
-             // we need to save key for the next time
-             this.setState({firstTime: true});
-             this.setState({startTimer: new Date()});
-           }
+    var diff = Moment(endI).unix() - Moment(startI).unix();
+    if(!isNaN(diff)){
+      this.setState({ idelTime: (diff + this.state.idelTime)});
+    }
 
+    this.interval = setInterval (() => {
 
-          // //      this.setState({ isRunning: !isRunning });
-          // if(isRunning){
-            clearInterval(this.interval);
-            this.setState({ isRunning: false });
+      // Main
+      var end = Moment.utc(new Date());
+      var start = Moment.utc(this.state.mainTimerStart);
 
-            var end = Moment.utc(new Date());
-            var start = Moment.utc(this.state.mainTimerStart);
+      var currentTimediff = Moment(end).unix() - Moment(start).unix();
+      currentTimediff = currentTimediff + this.state.mainTime;
+      this.setState({ mainTimer: this.toHHMMSS(currentTimediff) });
 
-            var diff = Moment(end).unix() - Moment(start).unix();
-            this.setState({ mainTime: (diff + this.state.mainTime)});
+    },1000);
+        // }
+  }
 
-            this.idelInterval = setInterval (() => {
+  handlePlay(){
+    this.clearAllInterval();
 
-              // Main
-              var end = Moment.utc(new Date());
-              var start = Moment.utc(this.state.startTimer);
+    if(!this.state.firstTime) { // first time
+      // we need to save key for the next time
+      this.setState({firstTime: true});
+      this.setState({startTimer: new Date()});
+    }
 
-              var totalTimeDiff = Moment(end).unix() - Moment(start).unix();
-              this.setState({ totalTime: totalTimeDiff});
-              this.setState({ totalTimer: this.toHHMMSS(totalTimeDiff) });
+    this.setState({
+      idelTimerStart: new Date(),
+      isRunning: false });
 
-               var idelTimeDiff = totalTimeDiff - this.state.mainTime;
-               this.setState({ totalIdelTimer: idelTimeDiff});
-               this.setState({ idelTimer: this.toHHMMSS(idelTimeDiff) });
+    // To set main Timer
+    var end = Moment.utc(new Date());
+    var start = Moment.utc(this.state.mainTimerStart);
 
-            },1000);
-      }
+    var diff = Moment(end).unix() - Moment(start).unix();
+    this.setState({ mainTime: (diff + this.state.mainTime)});
+
+    this.idelInterval = setInterval (() => {
+
+      // Main
+      var endI = Moment.utc(new Date());
+      var startI = Moment.utc(this.state.idelTimerStart);
+
+      var currentTimediff = Moment(endI).unix() - Moment(startI).unix();
+      currentTimediff = currentTimediff + this.state.idelTime;
+      this.setState({ idelTimer: this.toHHMMSS(currentTimediff) });
+
+    },1000);
+  }
 
   // End Timer
 
   updateAllFlag(){
 
-    clearInterval(this.interval);
-    clearInterval(this.idelInterval);
+    this.clearAllInterval();
+
     console.log("==============> clear all Flags");
     let initVal = {
         totalTimer: null,
@@ -280,6 +322,8 @@ getWorkOrderData () {
       this.state.idelTime= null;
       this.state.blockTimer= null;
       this.state.blockTime= null;
+      this.state.blockTimerStart= null;
+      this.state.idelTimerStart= null;
     }
     return (<View></View>);
   }
@@ -390,7 +434,7 @@ _renderWorkOrder(){
                 Blocked Timer
               </Text>
               <Text style={styles.homeScreenIdleTimerTexts}>
-                <Text >{this.state.idelTimer || '00:00:00'}</Text>
+                <Text >{this.state.blockTimer || '00:00:00'}</Text>
               </Text>
               <View >
                 <View style={styles.continueBtn}>
