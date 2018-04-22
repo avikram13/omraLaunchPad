@@ -65,6 +65,10 @@ getWorkOrderData () {
       isRunning: false,
       mainTimer: null,
       mainTime: null,
+      totalIdelTimer: null,
+      totalIdelTime: null,
+      idelTimer: null,
+      idelTime: null,
       totalTimer: null,
       totalTime: null,
       StartTimer: null,
@@ -183,33 +187,102 @@ getWorkOrderData () {
           var diff = Moment(end).unix() - Moment(start).unix();
           this.setState({ mainTime: (diff + this.state.mainTime)});
 
-          return ;
+          this.idelInterval = setInterval (() => {
+
+            // Main
+            var end = Moment.utc(new Date());
+            var start = Moment.utc(this.state.startTimer);
+
+            var totalTimeDiff = Moment(end).unix() - Moment(start).unix();
+            this.setState({ totalTime: totalTimeDiff});
+            this.setState({ totalTimer: this.toHHMMSS(totalTimeDiff) });
+
+             var idelTimeDiff = totalTimeDiff - this.state.mainTime;
+             this.setState({ totalIdelTimer: idelTimeDiff});
+             this.setState({ idelTimer: this.toHHMMSS(idelTimeDiff) });
+
+          },1000);
+
+        }
+        else{
+          clearInterval(this.idelInterval);
+          this.setState({
+            mainTimerStart: new Date(),
+            isRunning: true
+           });
+
+          // var end = Moment.utc(new Date());
+          // var start = Moment.utc(this.state.idelTimerStart);
+          //
+          // var diff = Moment(end).unix() - Moment(start).unix();
+          // this.setState({ idelTime: (diff + this.state.idelTime)});
+
+          ///
+          this.interval = setInterval (() => {
+
+            // Main
+            var end = Moment.utc(new Date());
+            var start = Moment.utc(this.state.mainTimerStart);
+            var startT = Moment.utc(this.state.startTimer);
+
+            var totalTimeDiff = Moment(end).unix() - Moment(startT).unix();
+            this.setState({ totalTime: totalTimeDiff});
+            this.setState({ totalTimer: this.toHHMMSS(totalTimeDiff) });
+
+            var currentTimediff = Moment(end).unix() - Moment(start).unix();
+            currentTimediff = currentTimediff + this.state.mainTime;
+            this.setState({ mainTimer: this.toHHMMSS(currentTimediff) });
+
+             var idelTimeDiff = totalTimeDiff - currentTimediff;
+             this.setState({ totalIdelTimer: idelTimeDiff});
+             this.setState({ idelTimer: this.toHHMMSS(idelTimeDiff) });
+
+          },1000);
         }
 
-        this.setState({
-          mainTimerStart: new Date(),
-          isRunning: true
-         });
+        // clearInterval(this.interval);
 
 
-         this.totalInterval = setInterval (() => {
-           var end = Moment.utc(new Date());
-           var start = Moment.utc(this.state.startTimer);
 
-           var totalTimeDiff = Moment(end).unix() - Moment(start).unix();
-           this.setState({ totalTime: totalTimeDiff});
-           this.setState({ totalTimer: this.toHHMMSS(totalTimeDiff) });
-         });
+         // this.idelInterval = setInterval (() => {
+         //   var end = Moment.utc(new Date());
+         //   var start = Moment.utc(this.state.mainTimerStart);
+         //   var startT = Moment.utc(this.state.startTimer);
+         //
+         //   var totalTimeDiff = Moment(end).unix() - Moment(startT).unix();
+         //   this.setState({ totalTime: totalTimeDiff});
+         //   this.setState({ totalTimer: this.toHHMMSS(totalTimeDiff) });
+         //
+         //   var currentTimediff = Moment(end).unix() - Moment(start).unix();
+         //   currentTimediff = currentTimediff + this.state.mainTime;
+         //   this.setState({ mainTimer: this.toHHMMSS(currentTimediff) });
+         //
+         //    var idelTimeDiff = totalTimeDiff - currentTimediff;
+         //    this.setState({ totalIdelTimer: idelTimeDiff});
+         //    this.setState({ idelTimer: this.toHHMMSS(idelTimeDiff) });
+         // });
 
-         this.interval = setInterval (() => {
-
-           var end = Moment.utc(new Date());
-           var start = Moment.utc(this.state.mainTimerStart);
-
-           var currentTimediff = Moment(end).unix() - Moment(start).unix();
-           currentTimediff = currentTimediff + this.state.mainTime;
-           this.setState({ mainTimer: this.toHHMMSS(currentTimediff) });
-         });
+         // this.interval = setInterval (() => {
+         //
+         //   // Main
+         //   var end = Moment.utc(new Date());
+         //   var start = Moment.utc(this.state.mainTimerStart);
+         //   var startT = Moment.utc(this.state.startTimer);
+         //
+         //   var totalTimeDiff = Moment(end).unix() - Moment(startT).unix();
+         //   this.setState({ totalTime: totalTimeDiff});
+         //   this.setState({ totalTimer: this.toHHMMSS(totalTimeDiff) });
+         //
+         //   var currentTimediff = Moment(end).unix() - Moment(start).unix();
+         //   currentTimediff = currentTimediff + this.state.mainTime;
+         //   this.setState({ mainTimer: this.toHHMMSS(currentTimediff) });
+         //
+         //    var idelTimeDiff = totalTimeDiff - currentTimediff;
+         //    this.setState({ totalIdelTimer: idelTimeDiff});
+         //    this.setState({ idelTimer: this.toHHMMSS(idelTimeDiff) });
+         //
+         //
+         // },1000);
     }
 
     _renderButtons(){
@@ -226,54 +299,10 @@ getWorkOrderData () {
     }
   // End Timer
 
-  componentDidUpdate(previousProps, previousState) {
-
-   //if(previousProps.data !== this.props.data) {
-   if(!this.props.screenProps.flags.userLogInFlag){
-     // let initVal = {
-     //     getWorkOrder: '',
-     //     workOrderStatus: '',
-     //     message: '',
-     //     isLoggedIn: false,
-     //     workeOrederFetched: true,
-     //     hasCameraPermission: null,
-     //     lastScannedUrl: null,
-     //     isRunning: false,
-     //     mainTimer: null,
-     //     mainTime: null,
-     //     totalTimer: null,
-     //     totalTime: null,
-     //     StartTimer: null,
-     //     firstTime: false,
-     //     mainTimerStart: null,
-     // } /*true or false*/
-     // if(initVal.totalTimer !== this.state.totalTimer){
-     //   this.setState({initVal});
-     // }
-     // this.setState({
-     //     getWorkOrder: '',
-     //     workOrderStatus: '',
-     //     message: '',
-     //     isLoggedIn: false,
-     //     workeOrederFetched: true,
-     //     hasCameraPermission: null,
-     //     lastScannedUrl: null,
-     //     isRunning: false,
-     //     mainTimer: null,
-     //     mainTime: null,
-     //     totalTimer: null,
-     //     totalTime: null,
-     //     StartTimer: null,
-     //     firstTime: false,
-     //     mainTimerStart: null,
-     // });
-   }
- }
-
   updateAllFlag(){
 
     clearInterval(this.interval);
-    clearInterval(this.totalInterval);
+    clearInterval(this.idelInterval);
     console.log("==============> clear all Flags");
     let initVal = {
         getWorkOrder: '',
@@ -310,6 +339,11 @@ getWorkOrderData () {
       this.state.StartTimer= null;
       this.state.firstTime= false;
       this.state.mainTimerStart= null;
+      this.state.totalIdelTimer= null;
+      this.state.totalIdelTime= null;
+      this.state.idelTimer= null;
+      this.state.idelTime= null;
+
     }
     return (<View></View>);
   }
@@ -335,28 +369,74 @@ _renderWorkOrder(){
             Workorder Number: <Text style={styles.homeScreenTexts}>{this.state.workOrderDetails.workOrderNumber}</Text>
         </Text>
         <Text style={styles.homeScreenWSTitleTexts}>
-            Work started at {Moment(this.state.startTimer).format('H:mm:ss').toString()} on ({Moment(this.state.startTimer).format('mm:dd:yy').toString()})
+            Work started at {Moment(this.state.startTimer).format('H:mm:ss').toString()} on ({Moment(this.state.startTimer).format('DD/MM/YYYY').toString()})
         </Text>
-        <View>
-          <Text>
-            Wrench Time
-          </Text>
-          <Text style={styles.textright}>
-            <Text >{this.state.mainTimer || '00:00:00'}</Text>
-            <InlineImage
-              style={styles.image}
-              source={require('../assets/images/pause.png')}
-            />
-          </Text>
-        </View>
-        <View>
-          <Text>
-            Idle Time
-          </Text>
-          <Text style={styles.textright}>
-            <Text >{this.state.mainTimer || '00:00:00'}</Text>
-          </Text>
-        </View>
+        {!!this.state.isRunning && (
+          <View>
+            <View>
+              <Text style={styles.homeScreenWTimeTexts}>
+                Wrench Time
+              </Text>
+              <View style={styles.pauseTimerImage}>
+                <Text style={styles.homeScreenWTimerTexts}>
+                  <Text >{this.state.mainTimer || '00:00:00'}</Text>
+                </Text>
+                <View style={styles.homeScreenWTimeImage}>
+                  <TouchableOpacity onPress={this.handleStartStop.bind(this)}>
+                    <InlineImage
+                      style={styles.Pauseimage}
+                      source={require('../assets/images/pause.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+            <View>
+              <Text style={styles.homeScreenWTimeTexts}>
+                Idle Time
+              </Text>
+              <Text style={styles.homeScreenITimerTexts}>
+                <Text >{this.state.idelTimer || '00:00:00'}</Text>
+              </Text>
+            </View>
+            <View>
+              <View style={styles.blockageBtn}>
+                <Button
+                  title="! BLOCKED"
+                  color='white'
+                  onPress={this._fetchMyWorkOrder}
+                />
+              </View>
+              <View style={styles.DoneBtn}>
+                <Button
+                  title="Done"
+                  color='white'
+                  onPress={this._fetchMyWorkOrder}
+                />
+              </View>
+            </View>
+          </View>
+        )}
+        {!this.state.isRunning && (
+          <View>
+            <View>
+              <Text style={styles.homeScreenITimeTexts}>
+                Idel Timer
+              </Text>
+                <Text style={styles.homeScreenIdleTimerTexts}>
+                  <Text >{this.state.idelTimer || '00:00:00'}</Text>
+                </Text>
+                <View style={styles.homeScreenPlayImage}>
+                  <TouchableOpacity onPress={this.handleStartStop.bind(this)}>
+                    <InlineImage
+                      style={styles.PlayImage}
+                      source={require('../assets/images/play.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
+            </View>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -372,12 +452,9 @@ _renderWorkOrder(){
             <View>
               <Image
                 style={{width: this.getSize().width, height: 85, marginTop:-30}}
-                source={require('../assets/images/Logo_LaunchPad.png')}
+                source={require('../assets/images/headerWhiteBg.png')}
               />
-              <View style={styles.welcomeContainer}>
-                <HercText style={styles.omraText}>Omra</HercText>
-                <HercText style={styles.omraTagText}>(perfection can only be achieved by accurate review system)</HercText>
-              </View>
+              <View style={styles.topBarInfoContainer}>
               {!!this.props.screenProps.flags.userLogInFlag && (
                 <View>
                   {!this.state.workeOrederFetched && (
@@ -433,6 +510,7 @@ _renderWorkOrder(){
                   </View>
                 </KeyboardAwareScrollView>
               )}
+              </View>
             </View>
           </View>
         </ScrollView>
@@ -492,10 +570,57 @@ _renderWorkOrder(){
 }
 
 const styles = StyleSheet.create({
+  blockageBtn:{
+    marginTop: 20,
+    backgroundColor: 'red',
+    alignSelf: 'center',
+    color: 'white',
+    width: Dimensions.get('window').width/3,
+    borderRadius: 5,
+  },
+  DoneBtn:{
+    marginTop: 20,
+    backgroundColor: 'green',
+    alignSelf: 'center',
+    color: 'white',
+    width: Dimensions.get('window').width/2,
+    borderRadius: 5,
+  },
+  pauseTimerImage:{
+    justifyContent : 'space-between',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
+  homeScreenPlayImage:{
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 0,
+    marginTop:0,
+    top:120,
+  },
+  homeScreenWTimeImage:{
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 40,
+    marginTop:-30,
+    top:-30,
+    right: 30,
+  },
+  PlayImage:{
+    width: 100,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  Pauseimage:{
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   image: {
     width: 10,
     height: 10,
-    color: 'blue'
   },
   textright: {
     alignSelf: 'flex-end',
@@ -509,10 +634,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 20,
+    marginLeft: 5,
   },
   homeScreenTitleTexts:{
     fontSize: 14,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    marginLeft:5,
   },
   homeScreenWSTitleTexts:{
     fontSize: 14,
@@ -596,15 +723,46 @@ const styles = StyleSheet.create({
     color: 'blue',
     fontSize: 80
   },
-  omraTagText: {
-    color: 'blue',
-    fontSize: 10,
-    marginTop: -14,
-    bottom: 0,
+  homeScreenITimeTexts:{
+    color: '#808080',
+    marginTop: 20,
+    left: -65,
+    alignSelf: 'center',
+  },
+  homeScreenWTimeTexts:{
+    color: '#808080',
+    marginLeft: 30,
+    marginTop: 20,
+  },
+  homeScreenIdleTimerTexts:{
+    fontSize: 44,
+    fontWeight: 'bold',
+    marginBottom:20,
+    alignSelf: 'center',
+  },
+  homeScreenITimerTexts:{
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginLeft: 30,
+    marginBottom:20,
+  },
+  homeScreenWTimerTexts:{
+    fontSize: 44,
+    fontWeight: 'bold',
+    marginLeft: 30,
+    marginBottom:20,
+  },
+  topBarInfoContainer: {
+    position: 'absolute',
+    top: 63,
+    left: 0,
+    right: 0,
+    paddingTop:10,
+    paddingBottom:20,
     ...Platform.select({
       ios: {
         shadowColor: 'black',
-        shadowOffset: { height: 5 },
+        shadowOffset: { height: -3 },
         shadowOpacity: 0.1,
         shadowRadius: 3,
       },
@@ -612,7 +770,7 @@ const styles = StyleSheet.create({
         elevation: 20,
       },
     }),
-    backgroundColor: '#fbfbfb',
+    backgroundColor: '#ffff',
   },
   tabBarInfoContainer: {
     position: 'absolute',
