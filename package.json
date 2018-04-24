@@ -20,11 +20,13 @@
     "react-native": "https://github.com/expo/react-native/archive/sdk-26.0.0.tar.gz",
     "react-native-keyboard-aware-scroll-view": "^0.5.0",
     "react-native-radio-buttons": "^1.0.0",
+    "react-native-svg": "^6.3.1",
     "react-navigation": "^1.5.10",
     "react-navigation-is-focused-hoc": "^1.1.1",
     "react-redux": "^5.0.7",
     "react-test-renderer": "^16.3.1",
-    "redux": "^3.7.2"
+    "redux": "^3.7.2",
+    "victory-native": "^0.17.4"
   },
   "devDependencies": {
     "eslint": "^4.19.1",

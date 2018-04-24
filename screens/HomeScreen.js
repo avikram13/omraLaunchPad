@@ -20,25 +20,20 @@ import {
 } from 'react-native';
 
 import { BarCodeScanner, Permissions, WebBrowser } from 'expo';
-
 import { MonoText, HercText } from '../components/StyledText';
-
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-
 import TimeFormatter from 'minutes-seconds-milliseconds';
-
 import Moment from 'moment';
-
 import Api from '../api/Api';
-
 import InlineImage from '../components/InlineImage.js';
-
 import { RadioButtons } from 'react-native-radio-buttons';
+
+import { VictoryBar, VictoryPie, VictoryChart } from "victory-native";
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
     title: 'Work Order',
-};
+  };
 
 getWorkOrderData () {
   return (  {
@@ -522,6 +517,27 @@ _renderPauseReason(){
 }
 
 _renderWorkOrder(){
+  // let data=[
+  //   {x: "Wrench Time", y: this.state.mainTime},
+  //   {x: "Idle Time", y: 91},
+  //   {x: "Blocked Time", y: 55},
+  //   {x: "Other", y: 55}
+  // ];
+  pieData = [];
+  pieColorScale = [];
+  if(this.state.mainTime > 0){
+    pieData.push({x: "Wrench Time", y: this.state.mainTime});
+    pieColorScale.push("#228B22");
+  }
+  if(this.state.idelTime > 0){
+    pieData.push({x: "Idle Time", y: this.state.idelTime});
+    pieColorScale.push("#F66D3B");
+  }
+  if(this.state.blockTime > 0 ){
+    pieData.push({x: "Blocked Time", y: this.state.blockTime});
+    pieColorScale.push("#D73C4C");
+  }
+
   return (
     <View style={styles.container}>
       <View>
@@ -657,28 +673,17 @@ _renderWorkOrder(){
                     <View>
                       <Text style={{fontWeight:'bold', marginLeft: 5}}> This WorkOrder is completed with following details:</Text>
                       <View>
-                        <Text style={styles.homeScreenWTimeTexts}>
-                          Wrench Time
-                        </Text>
-                        <Text style={styles.homeScreenITimerTexts}>
-                          <Text >{this.state.mainTimer || '00:00:00'}</Text>
-                        </Text>
-                      </View>
-                      <View>
-                        <Text style={styles.homeScreenWTimeTexts}>
-                          Idle Time
-                        </Text>
-                        <Text style={styles.homeScreenITimerTexts}>
-                          <Text >{this.state.idelTimer || '00:00:00'}</Text>
-                        </Text>
-                      </View>
-                      <View>
-                        <Text style={styles.homeScreenWTimeTexts}>
-                          Blocked Time
-                        </Text>
-                        <Text style={styles.homeScreenITimerTexts}>
-                          <Text >{this.state.blockTimer || '00:00:00'}</Text>
-                        </Text>
+                        <VictoryPie
+                          height={250}
+                          style={{
+                            data: {
+                              stroke: (data) => data.y > 75 ? "black" : "none"
+                            }
+                          }}
+                          innerRadius={30}
+                          data={pieData}
+                          colorScale={pieColorScale}
+                        />
                       </View>
                       <View >
                         <View style={styles.scanBtn}>
@@ -923,24 +928,24 @@ const styles = StyleSheet.create({
   },
   scanBtn:{
     margin: 5,
-    backgroundColor: 'green',
+    backgroundColor: '#1E90FF',
     width: (Dimensions.get('window').width - 10),
     borderRadius: 5,
   },
   PauseContinueBtn:{
     margin: 5,
-    backgroundColor: 'green',
+    backgroundColor: '#1E90FF',
     width: ((Dimensions.get('window').width/2)-10),
     borderRadius: 5,
   },
   PauseCancleBtn:{
     margin: 5,
-    backgroundColor: 'red',
+    backgroundColor: '#1E90FF',
     width: ((Dimensions.get('window').width/2)-10),
     borderRadius: 5,
   },
   continueBtn:{
-    backgroundColor: 'green',
+    backgroundColor: '#1E90FF',
     alignSelf: 'center',
     width: Dimensions.get('window').width/3,
     borderRadius: 5,
@@ -954,7 +959,7 @@ const styles = StyleSheet.create({
   },
   DoneBtn:{
     marginTop: 20,
-    backgroundColor: 'green',
+    backgroundColor: '#1E90FF',
     alignSelf: 'center',
     width: Dimensions.get('window').width/2,
     borderRadius: 5,
