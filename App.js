@@ -6,19 +6,19 @@ import RootNavigation from './navigation/RootNavigation';
 import MainTabNavigator from './navigation/MainTabNavigator';
 
 flags = {
-  userLogInFlag:false
+  userLogInFlag:false,
+  userType:''
 };
 
 export default class App extends React.Component {
   state = {
     isLoadingComplete: false,
   };
-
   constructor(props) {
         super(props);
         this.updateFlag  = this.updateFlag.bind(this);
         this.getFlagValue  = this.getFlagValue.bind(this);
-        this.flags = {userLogInFlag:false}
+        this.flags = {userLogInFlag:false,userType:''}
     }
 
   // componentDidMount() {
@@ -26,10 +26,11 @@ export default class App extends React.Component {
   //             this.flags = {userLogInFlag:false};
   // }
 
-  updateFlag(_flagVal){
+  updateFlag(_flagVal,_flagType){
     console.log('updateFlag: ' + _flagVal);
-    this.setState({userLogInFlag:_flagVal});
+    this.setState({userLogInFlag:_flagVal,userType:_flagType});
     this.flags.userLogInFlag = _flagVal;
+    this.flags.userType = _flagType;
     console.log('We pass argument from Child to Parent: ' + this.flags.userLogInFlag);
   }
 
@@ -40,6 +41,8 @@ export default class App extends React.Component {
 
 
   render() {
+    console.log('Angesh');
+
     if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen) {
       return (
           <AppLoading

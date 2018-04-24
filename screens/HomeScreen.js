@@ -795,6 +795,9 @@ _renderWorkOrder(){
   render() {
     // If dimensions is defined, render the real view otherwise the dummy view
     //this.setState({ isLoggedIn: this.props.screenProps.flags.userLogInFlag});
+    //this.setState({ isLoggedIn: this.props.screenProps.flags.userLogInFlag});
+    console.log(this.props.screenProps.flags.userLogInFlag);
+    console.log(this.props.screenProps.flags.userType);
     return (
       <View style={styles.container}>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -807,45 +810,60 @@ _renderWorkOrder(){
               <View style={styles.topBarInfoContainer}>
               {!!this.props.screenProps.flags.userLogInFlag && (
                 <View>
-                  {!this.state.workeOrederFetched && (
+                  {!!(this.props.screenProps.flags.userType == 'outageEngineer') && (
                     <View>
-                      <KeyboardAwareScrollView>
+                      {!this.state.workeOrederFetched && (
                         <View>
-                          <View style={styles.getWorkOrderBtnView}>
-                            <Button
-                              style={styles.getWorkOrderBtn}
-                              title="scan WorkOrder"
-                              color='white'
-                              onPress={this._fetchMyWorkOrder}
-                              fontWeight='bold'
-                            />
-                          </View>
-                          <View style={styles.container_view}>
-                            {this.state.hasCameraPermission === null
-                              ? <Text>Requesting for camera permission</Text>
-                              : this.state.hasCameraPermission === false
-                              ? <Text style={{ color: '#fff' }}>
-                                  Camera permission is not granted
-                                </Text>
-                              : <BarCodeScanner
-                                  onBarCodeRead={this._handleBarCodeRead}
-                                  style={{
-                                    height: (Dimensions.get('window').height/2),
-                                    width: Dimensions.get('window').width,
-                                  }}
+                          <KeyboardAwareScrollView>
+                            <View>
+                              <View style={styles.getWorkOrderBtnView}>
+                                <Button
+                                  style={styles.getWorkOrderBtn}
+                                  title="scan WorkOrder"
+                                  color='white'
+                                  onPress={this._fetchMyWorkOrder}
+                                  fontWeight='bold'
                                 />
-                            }
-                            {this._maybeRenderUrl()}
-                            <StatusBar hidden />
-                          </View>
+                              </View>
+                              <View style={styles.container_view}>
+                                {this.state.hasCameraPermission === null
+                                  ? <Text>Requesting for camera permission</Text>
+                                  : this.state.hasCameraPermission === false
+                                  ? <Text style={{ color: '#fff' }}>
+                                      Camera permission is not granted
+                                    </Text>
+                                  : <BarCodeScanner
+                                      onBarCodeRead={this._handleBarCodeRead}
+                                      style={{
+                                        height: (Dimensions.get('window').height/2),
+                                        width: Dimensions.get('window').width,
+                                      }}
+                                    />
+                                }
+                                {this._maybeRenderUrl()}
+                                <StatusBar hidden />
+                              </View>
+                            </View>
+                          </KeyboardAwareScrollView>
                         </View>
-                      </KeyboardAwareScrollView>
+                      )}
+                      {!!this.state.workeOrederFetched && (
+                        <View>
+                          {this._renderWorkOrder()}
+                        </View>
+                      )}
                     </View>
                   )}
-                  {!!this.state.workeOrederFetched && (
-                    <View>
-                      {this._renderWorkOrder()}
-                    </View>
+                  {!!(this.props.screenProps.flags.userType == 'outageManager') && (
+                    <KeyboardAwareScrollView>
+                      {this.updateAllFlag()}
+                      <View>
+                        <Text
+                          style={{flex: 0,fontSize: 27, marginLeft: 30}}>
+                            WorkOrder Report:
+                        </Text>
+                      </View>
+                    </KeyboardAwareScrollView>
                   )}
                 </View>
               )}

@@ -28,7 +28,8 @@ export default class Login extends React.Component {
         username: '',
         password: '',
         isLoggingIn: '',
-        message: ''
+        message: '',
+        incorrectMessage: ''
     }
 
     constructor(props) {
@@ -39,46 +40,65 @@ export default class Login extends React.Component {
 
     _userLogin = () => {
 
-        this.setState({ isLoggingIn: true, message: ('to omra '+this.state.username)});
-
+      if(((this.state.username == 'User1') && (this.state.password == 'aaaa'))
+      || ((this.state.username == 'User2') && (this.state.password == 'ssss')) ){
+        this.setState({ incorrectMessage: '' });
         console.log(this.state.isLoggingIn);
         var params = {
             username: this.state.username,
             password: this.state.password,
             grant_type: 'password'
         };
-        this.props.allFlags.updateFlag(true);
+        this.setState({ isLoggingIn: true, message: ('to omra '+this.state.username)});
+
+        if(this.state.username == 'User1'){
+          this.props.allFlags.updateFlag(true,'outageEngineer');
+        }
+
+        if(this.state.username == 'User2'){
+          this.props.allFlags.updateFlag(true,'outageManager');
+        }
+
         this.setState({ isLoggingIn: true });
 
         this.props.navigation.navigate('WorkOrder');
+      }
+      else{
+        this.setState({incorrectMessage: 'In Correct userID or Password'});
+      }
     }
 
     clearUsername = () => {
         //this.props.allFlags.updateFlag(false);
         this._username.setNativeProps({ text: '' });
         this.setState({ message: '' });
+        this.setState({ incorrectMessage: '' });
+
     }
 
     clearPassword = () => {
       //this.props.allFlags.updateFlag(false);
         this._password.setNativeProps({ text: '' });
         this.setState({ message: '' });
+        this.setState({ incorrectMessage: '' });
     }
 
     clearLogOutUsername = () => {
       //this.props.allFlags.updateFlag(false);
         this.setState({ message: '' });
+        this.setState({ incorrectMessage: '' });
     }
 
     clearLogOutPassword = () => {
       //this.props.allFlags.updateFlag(false);
         this.setState({ message: '' });
+        this.setState({ incorrectMessage: '' });
     }
 
     _onLogoutPress = () => {
 
         this.setState({ isLoggingIn: false, message: 'LoggedIn' });
-        this.props.allFlags.updateFlag(false);
+        this.props.allFlags.updateFlag(false,'');
 
         this.clearLogOutUsername();
         this.clearLogOutPassword();
@@ -116,6 +136,13 @@ export default class Login extends React.Component {
               onSubmitEditing={this._userLogin}
             />
             </View>
+            {!!this.state.incorrectMessage && (
+              <View>
+                <Text style={{color:'red',fontWeight:'bold'}}>
+                  {this.state.incorrectMessage}
+                </Text>
+              </View>
+            )}
             {this.state.isLoggingIn && <ActivityIndicator />}
             <View style={{margin:7}} />
             <View
