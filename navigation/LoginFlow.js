@@ -36,13 +36,11 @@ export default class LoginFlow extends React.Component {
     return (
       <View style={styles.container}>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-          <Image
-            style={{width: this.getSize().width, height: 85, marginTop:-30}}
-            source={require('../assets/images/Logo_LaunchPad.png')}
-          />
-          <View style={styles.welcomeContainer}>
-            <HercText style={styles.omraText}>Omra</HercText>
-            <HercText style={styles.omraTagText}>(perfection can only be achieved by accurate review system)</HercText>
+          <View>
+            <Image
+              style={{width: this.getSize().width, height: 85, marginTop:-30}}
+              source={require('../assets/images/blueLogo.png')}
+            />
           </View>
           <View style={styles.getStartedContainer}>
             <Login

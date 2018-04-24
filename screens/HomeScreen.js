@@ -89,6 +89,7 @@ getWorkOrderData () {
 
   updateAllFlag(){
 
+    this._requestCameraPermission();
     this.clearAllInterval();
 
     let initVal = {
@@ -140,9 +141,7 @@ getWorkOrderData () {
   scanAnotherWorkOrder(){
     this.setState({workeOrederFetched: false});
     this.updateAllFlag();
-    this._requestCameraPermission();
   }
-
 
   _fetchWorkOrder = () => {
     console.log("Angesh ");
@@ -518,12 +517,6 @@ _renderPauseReason(){
 }
 
 _renderWorkOrder(){
-  // let data=[
-  //   {x: "Wrench Time", y: this.state.mainTime},
-  //   {x: "Idle Time", y: 91},
-  //   {x: "Blocked Time", y: 55},
-  //   {x: "Other", y: 55}
-  // ];
   pieData = [];
   pieColorScale = [];
   if(this.state.mainTime > 0){
@@ -587,7 +580,7 @@ _renderWorkOrder(){
                                     <TouchableOpacity onPress={this._callPause.bind(this)}>
                                       <InlineImage
                                         style={styles.Pauseimage}
-                                        source={require('../assets/images/pause.png')}
+                                        source={require('../assets/images/pause-button.png')}
                                       />
                                     </TouchableOpacity>
                                   </View>
@@ -632,7 +625,7 @@ _renderWorkOrder(){
                                   <TouchableOpacity onPress={this.handlePause.bind(this)}>
                                     <InlineImage
                                       style={styles.PlayImage}
-                                      source={require('../assets/images/play.png')}
+                                      source={require('../assets/images/play-button.png')}
                                     />
                                   </TouchableOpacity>
                                 </View>
@@ -806,7 +799,7 @@ _renderWorkOrder(){
             <View>
               <Image
                 style={{width: this.getSize().width, height: 85, marginTop:-30}}
-                source={require('../assets/images/headerWhiteBg.png')}
+                source={require('../assets/images/blueLogo.png')}
               />
               <View style={styles.topBarInfoContainer}>
               {!!this.props.screenProps.flags.userLogInFlag && (
@@ -817,15 +810,6 @@ _renderWorkOrder(){
                         <View>
                           <KeyboardAwareScrollView>
                             <View>
-                              <View style={styles.getWorkOrderBtnView}>
-                                <Button
-                                  style={styles.getWorkOrderBtn}
-                                  title="scan WorkOrder"
-                                  color='white'
-                                  onPress={this._fetchMyWorkOrder}
-                                  fontWeight='bold'
-                                />
-                              </View>
                               <View style={styles.container_view}>
                                 {this.state.hasCameraPermission === null
                                   ? <Text>Requesting for camera permission</Text>
@@ -843,6 +827,15 @@ _renderWorkOrder(){
                                 }
                                 {this._maybeRenderUrl()}
                                 <StatusBar hidden />
+                              </View>
+                              <View style={styles.getWorkOrderBtnView}>
+                                <Button
+                                  style={styles.getWorkOrderBtn}
+                                  title="scan WorkOrder"
+                                  color='white'
+                                  onPress={this._fetchMyWorkOrder}
+                                  fontWeight='bold'
+                                />
                               </View>
                             </View>
                           </KeyboardAwareScrollView>
@@ -949,24 +942,24 @@ const styles = StyleSheet.create({
   scanBtn:{
     margin: 5,
     marginTop: -15,
-    backgroundColor: '#1E90FF',
+    backgroundColor: '#00AAFF',
     width: (Dimensions.get('window').width - 10),
     borderRadius: 5,
   },
   PauseContinueBtn:{
     margin: 5,
-    backgroundColor: '#1E90FF',
+    backgroundColor: '#00AAFF',
     width: ((Dimensions.get('window').width/2)-10),
     borderRadius: 5,
   },
   PauseCancleBtn:{
     margin: 5,
-    backgroundColor: '#1E90FF',
+    backgroundColor: '#00AAFF',
     width: ((Dimensions.get('window').width/2)-10),
     borderRadius: 5,
   },
   continueBtn:{
-    backgroundColor: '#1E90FF',
+    backgroundColor: '#00AAFF',
     alignSelf: 'center',
     width: Dimensions.get('window').width/3,
     borderRadius: 5,
@@ -979,7 +972,7 @@ const styles = StyleSheet.create({
   },
   DoneBtn:{
     marginTop: 20,
-    backgroundColor: '#1E90FF',
+    backgroundColor: '#00AAFF',
     alignSelf: 'center',
     width: Dimensions.get('window').width/2,
     borderRadius: 5,
@@ -1025,6 +1018,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   Pauseimage:{
+    backgroundColor: 'white',
     width: 40,
     height: 40,
     justifyContent: 'center',
@@ -1115,7 +1109,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   getWorkOrderBtnView: {
-    backgroundColor: 'blue',
+    backgroundColor: '#00AAFF',
   },
   getWorkOrderBtn: {
     color: 'blue',
