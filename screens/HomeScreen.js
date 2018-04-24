@@ -31,15 +31,14 @@ import Moment from 'moment';
 
 import Api from '../api/Api';
 
-import InlineImage from '../components/InlineImage.js'
+import InlineImage from '../components/InlineImage.js';
 
-import { RadioButtons } from 'react-native-radio-buttons'
+import { RadioButtons } from 'react-native-radio-buttons';
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
     title: 'Work Order',
-  };
-
+};
 
 getWorkOrderData () {
   return (  {
@@ -71,6 +70,7 @@ getWorkOrderData () {
       isPauseselected: false,
       isBlockselected: false,
       isBlocked: false,
+      isWorkOrderDone: false,
       mainTimer: null,
       mainTime: null,
       totalIdelTimer: null,
@@ -99,7 +99,7 @@ getWorkOrderData () {
     let initVal = {
         totalTimer: null,
     } /*true or false*/
-    if(initVal.totalTimer !== this.state.totalTimer){
+    if(initVal.totalTimer !== this.state.mainTimerStart){
       this.state.getWorkOrder = '';
       this.state.workOrderDetails = this.getWorkOrderData();
       this.state.workOrderStatus= '';
@@ -111,6 +111,7 @@ getWorkOrderData () {
       this.state.isRunning= false;
       this.state.isPauseselected = false;
       this.state.isBlockselected = false;
+      this.state.isWorkOrderDone = false;
       this.state.isBlocked= false;
       this.state.mainTimer= null;
       this.state.mainTime= null;
@@ -139,6 +140,12 @@ getWorkOrderData () {
       super(props);
       this._fetchWorkOrder = this._fetchWorkOrder.bind(this);
       //this.navigate = this.props.navigation.navigate;
+  }
+
+  scanAnotherWorkOrder(){
+    this.updateAllFlag();
+    this.setState({isWorkOrderDone: false});
+
   }
 
 
@@ -350,6 +357,19 @@ getWorkOrderData () {
 
   // End Timer
 
+  _WorkOrderComplete(){
+    this.clearAllInterval();
+
+    this.setState({workOrderStatus: 'Completed'});
+
+    var endM = Moment.utc(new Date());
+    var startM = Moment.utc(this.state.mainTimerStart);
+
+    var diffM = Moment(endM).unix() - Moment(startM).unix();
+    this.setState({ mainTime: (diffM + this.state.mainTime)});
+
+    this.setState({isWorkOrderDone: true});
+  }
 
   _callBlocked(){
     this.setState({isBlockselected: true});
@@ -399,9 +419,13 @@ clearBlockedRemarks(){
 _renderBlockReason(){
 
   const options = [
-    'Saftey reasons',
-    'Resource/Assets not aviable',
-    'Change in WorkOrder',
+    'Waiting on Supervision',
+    'Waiting on Permits',
+    'Finding Information',
+    'Looking for Tools',
+    'Waiting on Equipment',
+    'Waiting on Associates',
+    'Hunting Parts',
     'Other reasons',
   ];
 
@@ -528,99 +552,141 @@ _renderWorkOrder(){
                   <Text style={styles.homeScreenWSTitleTexts}>
                     Current Status: <Text style={styles.homeScreenTexts}>{this.state.workOrderStatus}</Text>
                   </Text>
-                  {!this.state.isBlocked && (
+                  {!this.state.isWorkOrderDone && (
                     <View>
-                      {!!this.state.isRunning && (
+                      {!this.state.isBlocked && (
                         <View>
-                          <View>
-                            <Text style={styles.homeScreenWTimeTexts}>
-                              Wrench Time
-                            </Text>
-                            <View style={styles.pauseTimerImage}>
-                              <Text style={styles.homeScreenWTimerTexts}>
-                                <Text >{this.state.mainTimer || '00:00:00'}</Text>
-                              </Text>
-                              <View style={styles.homeScreenWTimeImage}>
-                                <TouchableOpacity onPress={this._callPause.bind(this)}>
-                                  <InlineImage
-                                    style={styles.Pauseimage}
-                                    source={require('../assets/images/pause.png')}
+                          {!!this.state.isRunning && (
+                            <View>
+                              <View>
+                                <Text style={styles.homeScreenWTimeTexts}>
+                                  Wrench Time
+                                </Text>
+                                <View style={styles.pauseTimerImage}>
+                                  <Text style={styles.homeScreenWTimerTexts}>
+                                    <Text >{this.state.mainTimer || '00:00:00'}</Text>
+                                  </Text>
+                                  <View style={styles.homeScreenWTimeImage}>
+                                    <TouchableOpacity onPress={this._callPause.bind(this)}>
+                                      <InlineImage
+                                        style={styles.Pauseimage}
+                                        source={require('../assets/images/pause.png')}
+                                      />
+                                    </TouchableOpacity>
+                                  </View>
+                                </View>
+                              </View>
+                              <View>
+                                <Text style={styles.homeScreenWTimeTexts}>
+                                  Idle Time
+                                </Text>
+                                <Text style={styles.homeScreenITimerTexts}>
+                                  <Text >{this.state.idelTimer || '00:00:00'}</Text>
+                                </Text>
+                              </View>
+                              <View>
+                                <View style={styles.blockageBtn}>
+                                  <Button
+                                    title="! BLOCKED"
+                                    color='white'
+                                    onPress={this._callBlocked.bind(this)}
                                   />
-                                </TouchableOpacity>
+                                </View>
+                                <View style={styles.DoneBtn}>
+                                  <Button
+                                    title="Done"
+                                    color='white'
+                                    onPress={this._WorkOrderComplete.bind(this)}
+                                  />
+                                </View>
                               </View>
                             </View>
-                          </View>
-                          <View>
-                            <Text style={styles.homeScreenWTimeTexts}>
-                              Idle Time
-                            </Text>
-                            <Text style={styles.homeScreenITimerTexts}>
-                              <Text >{this.state.idelTimer || '00:00:00'}</Text>
-                            </Text>
-                          </View>
-                          <View>
-                            <View style={styles.blockageBtn}>
-                              <Button
-                                title="! BLOCKED"
-                                color='white'
-                                onPress={this._callBlocked.bind(this)}
-                              />
+                          )}
+                          {!this.state.isRunning && (
+                            <View>
+                              <View>
+                                <Text style={styles.homeScreenITimeTexts}>
+                                  Idel Timer
+                                </Text>
+                                <Text style={styles.homeScreenIdleTimerTexts}>
+                                  <Text >{this.state.idelTimer || '00:00:00'}</Text>
+                                </Text>
+                                <View style={styles.homeScreenPlayImage}>
+                                  <TouchableOpacity onPress={this.handlePause.bind(this)}>
+                                    <InlineImage
+                                      style={styles.PlayImage}
+                                      source={require('../assets/images/play.png')}
+                                    />
+                                  </TouchableOpacity>
+                                </View>
+                              </View>
                             </View>
-                            <View style={styles.DoneBtn}>
-                              <Button
-                                title="Done"
-                                color='white'
-                                onPress={this._fetchMyWorkOrder}
-                              />
-                            </View>
-                          </View>
+                          )}
                         </View>
                       )}
-                      {!this.state.isRunning && (
+                      {!!this.state.isBlocked && (
                         <View>
                           <View>
-                            <Text style={styles.homeScreenITimeTexts}>
-                              Idel Timer
+                            <InlineImage
+                              style={styles.blockedImage}
+                              source={require('../assets/images/blocked.png')}
+                            />
+                          </View>
+                          <View>
+                            <Text style={styles.homeScreenBTimeTexts}>
+                              Blocked Timer
                             </Text>
                             <Text style={styles.homeScreenIdleTimerTexts}>
-                              <Text >{this.state.idelTimer || '00:00:00'}</Text>
+                              <Text >{this.state.blockTimer || '00:00:00'}</Text>
                             </Text>
-                            <View style={styles.homeScreenPlayImage}>
-                              <TouchableOpacity onPress={this.handlePause.bind(this)}>
-                                <InlineImage
-                                  style={styles.PlayImage}
-                                  source={require('../assets/images/play.png')}
+                            <View >
+                              <View style={styles.continueBtn}>
+                                <Button
+                                  title="Resume"
+                                  color='white'
+                                  onPress={this.handleUnblocked.bind(this)}
                                 />
-                              </TouchableOpacity>
+                              </View>
                             </View>
                           </View>
                         </View>
                       )}
                     </View>
                   )}
-                  {!!this.state.isBlocked && (
+                  {!!this.state.isWorkOrderDone && (
                     <View>
+                      <Text style={{fontWeight:'bold', marginLeft: 5}}> This WorkOrder is completed with following details:</Text>
                       <View>
-                        <InlineImage
-                          style={styles.blockedImage}
-                          source={require('../assets/images/blocked.png')}
-                        />
+                        <Text style={styles.homeScreenWTimeTexts}>
+                          Wrench Time
+                        </Text>
+                        <Text style={styles.homeScreenITimerTexts}>
+                          <Text >{this.state.mainTimer || '00:00:00'}</Text>
+                        </Text>
                       </View>
                       <View>
-                        <Text style={styles.homeScreenBTimeTexts}>
-                          Blocked Timer
+                        <Text style={styles.homeScreenWTimeTexts}>
+                          Idle Time
                         </Text>
-                        <Text style={styles.homeScreenIdleTimerTexts}>
+                        <Text style={styles.homeScreenITimerTexts}>
+                          <Text >{this.state.idelTimer || '00:00:00'}</Text>
+                        </Text>
+                      </View>
+                      <View>
+                        <Text style={styles.homeScreenWTimeTexts}>
+                          Blocked Time
+                        </Text>
+                        <Text style={styles.homeScreenITimerTexts}>
                           <Text >{this.state.blockTimer || '00:00:00'}</Text>
                         </Text>
-                        <View >
-                          <View style={styles.continueBtn}>
-                            <Button
-                              title="RESUME"
-                              color='white'
-                              onPress={this.handleUnblocked.bind(this)}
-                            />
-                          </View>
+                      </View>
+                      <View >
+                        <View style={styles.scanBtn}>
+                          <Button
+                            title="Scan Another WorkOrder"
+                            color='white'
+                            onPress={this.scanAnotherWorkOrder.bind(this)}
+                          />
                         </View>
                       </View>
                     </View>
@@ -661,7 +727,7 @@ _renderWorkOrder(){
                     <View >
                       <View style={styles.PauseContinueBtn}>
                         <Button
-                          title="CONTINUE"
+                          title="Continue"
                           color='white'
                           onPress={this.handlePlay.bind(this)}
                         />
@@ -706,7 +772,7 @@ _renderWorkOrder(){
                 <View >
                   <View style={styles.PauseContinueBtn}>
                     <Button
-                      title="CONTINUE"
+                      title="Continue"
                       color='white'
                       onPress={this.handleBlocked.bind(this)}
                     />
@@ -854,6 +920,12 @@ const styles = StyleSheet.create({
     height: 60,
     marginLeft: 5,
     marginRight: 5,
+  },
+  scanBtn:{
+    margin: 5,
+    backgroundColor: 'green',
+    width: (Dimensions.get('window').width - 10),
+    borderRadius: 5,
   },
   PauseContinueBtn:{
     margin: 5,
