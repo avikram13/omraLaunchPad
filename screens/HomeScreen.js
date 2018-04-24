@@ -565,7 +565,7 @@ _renderWorkOrder(){
                   <Text style={styles.homeScreenWSTitleTexts}>
                     Work started at {Moment(this.state.startTimer).format('H:mm:ss').toString()} on ({Moment(this.state.startTimer).format('DD/MM/YYYY').toString()})
                   </Text>
-                  <Text style={styles.homeScreenWSTitleTexts}>
+                  <Text style={styles.homeScreenWSTexts}>
                     Current Status: <Text style={styles.homeScreenTexts}>{this.state.workOrderStatus}</Text>
                   </Text>
                   {!this.state.isWorkOrderDone && (
@@ -671,16 +671,16 @@ _renderWorkOrder(){
                   )}
                   {!!this.state.isWorkOrderDone && (
                     <View>
-                      <Text style={{fontWeight:'bold', marginLeft: 5}}> This WorkOrder is completed with following details:</Text>
+                      <Text style={{fontWeight:'bold', marginLeft: 5, marginBottom: -10 }}> This WorkOrder is completed with following details:</Text>
                       <View>
                         <VictoryPie
-                          height={250}
+                          height={220}
                           style={{
                             data: {
                               stroke: (data) => data.y > 75 ? "black" : "none"
                             }
                           }}
-                          innerRadius={30}
+                          innerRadius={20}
                           data={pieData}
                           colorScale={pieColorScale}
                         />
@@ -928,6 +928,7 @@ const styles = StyleSheet.create({
   },
   scanBtn:{
     margin: 5,
+    marginTop: -15,
     backgroundColor: '#1E90FF',
     width: (Dimensions.get('window').width - 10),
     borderRadius: 5,
@@ -951,7 +952,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   blockageBtn:{
-    marginTop: 20,
     backgroundColor: 'red',
     alignSelf: 'center',
     width: Dimensions.get('window').width/3,
@@ -974,7 +974,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 0,
     marginTop:0,
-    top:120,
+    top:40,
   },
   homeScreenPTimeImage:{
     justifyContent: 'center',
@@ -992,8 +992,8 @@ const styles = StyleSheet.create({
     right: 30,
   },
   blockedImage:{
-    width: 160,
-    height: 160,
+    width: 120,
+    height: 120,
     alignSelf:'center',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1033,10 +1033,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft:5,
   },
+  homeScreenWSTexts:{
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    alignSelf: 'center',
+  },
   homeScreenWSTitleTexts:{
     fontSize: 14,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 5,
     alignSelf: 'center',
   },
   timerWrapperInner:{
@@ -1117,20 +1123,18 @@ const styles = StyleSheet.create({
   },
   homeScreenBTimeTexts:{
     color: '#808080',
-    marginTop: 20,
     left: -50,
     alignSelf: 'center',
   },
   homeScreenITimeTexts:{
     color: '#808080',
-    marginTop: 20,
+    marginTop: 15,
     left: -65,
     alignSelf: 'center',
   },
   homeScreenWTimeTexts:{
     color: '#808080',
     marginLeft: 30,
-    marginTop: 20,
   },
   homeScreenIdleTimerTexts:{
     fontSize: 44,
