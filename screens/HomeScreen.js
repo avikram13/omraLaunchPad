@@ -58,7 +58,7 @@ getWorkOrderData () {
       workOrderStatus: 'Created',
       message: '',
       isLoggedIn: false,
-      workeOrederFetched: true,
+      workeOrederFetched: false,
       hasCameraPermission: null,
       lastScannedUrl: null,
       isRunning: false,
@@ -100,7 +100,7 @@ getWorkOrderData () {
       this.state.workOrderStatus= '';
       this.state.message= '';
       this.state.isLoggedIn= false;
-      this.state.workeOrederFetched= true;
+      this.state.workeOrederFetched= false;
       this.state.hasCameraPermission= null;
       this.state.lastScannedUrl= null;
       this.state.isRunning= false;
@@ -138,23 +138,23 @@ getWorkOrderData () {
   }
 
   scanAnotherWorkOrder(){
+    this.setState({workeOrederFetched: false});
     this.updateAllFlag();
-    this.setState({isWorkOrderDone: false});
-
+    this._requestCameraPermission();
   }
 
 
   _fetchWorkOrder = () => {
     console.log("Angesh ");
     console.log(this.state.lastScannedUrl);
-    Api.getItems('https://rallycoding.herokuapp.com/api/music_albums')
+    Api.getItems('https://outage-management-service.run.aws-usw02-pr.ice.predix.io/workorder/1')
    .then((response) => {
      console.log("After Call Angesh ");
      console.log(response);
-     response = JSON.stringify(getWorkOrderData());
+     response = JSON.stringify(this.getWorkOrderData());
      this.state.workOrderDetails = response;
      console.log(response);
-     this.setState({ workeOrederFetched: true });
+     this.setState({workeOrederFetched: true });
    }).catch((error) => {
                 console.log(error);
     });
@@ -186,6 +186,7 @@ getWorkOrderData () {
   };
 
   _handleBarCodeRead = result => {
+    console.log("I am inside _handleBarCodeRead");
     if (result.data !== this.state.lastScannedUrl) {
       LayoutAnimation.spring();
       this.setState({ lastScannedUrl: result.data });
@@ -914,6 +915,7 @@ _renderWorkOrder(){
 
   _maybeRenderUrl = () => {
     console.log("Angesh Check");
+    console.log("lastScannedUrl: =",this.state.lastScannedUrl);
     if (!this.state.lastScannedUrl) {
       return;
     }
