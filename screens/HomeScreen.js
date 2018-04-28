@@ -19,7 +19,8 @@ import {
   View,
 } from 'react-native';
 
-import { BarCodeScanner, Permissions, WebBrowser } from 'expo';
+import PropTypes from 'prop-types';
+import { BarCodeScanner, Permissions, WebBrowser,Constants, Location } from 'expo';
 import { MonoText, HercText } from '../components/StyledText';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import TimeFormatter from 'minutes-seconds-milliseconds';
@@ -28,7 +29,24 @@ import Api from '../api/Api';
 import InlineImage from '../components/InlineImage.js';
 import { RadioButtons } from 'react-native-radio-buttons';
 
-import { VictoryBar, VictoryPie, VictoryChart } from "victory-native";
+import { VictoryBar, VictoryPie, VictoryChart, VictoryStack, VictoryLabel, VictoryContainer } from "victory-native";
+
+class CustomLabel extends React.Component {
+  static propTypes = {
+    ...VictoryLabel.propTypes,
+    offset: PropTypes.array
+  };
+
+  renderLabel() {
+    const {offset, y, x} = this.props;
+    return <VictoryLabel {...this.props} y={y + offset[0]} x={x - offset[1]}/>
+  }
+
+  render() {
+    return this.renderLabel();
+  }
+}
+
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
@@ -53,6 +71,7 @@ getWorkOrderData () {
 }
 
   state = {
+      refreshData: 1,
       getWorkOrder: '',
       workOrderDetails: this.getWorkOrderData(),
       workOrderStatus: 'Created',
@@ -89,21 +108,21 @@ getWorkOrderData () {
 
   updateAllFlag(){
 
-    this._requestCameraPermission();
     this.clearAllInterval();
 
     let initVal = {
         totalTimer: null,
     } /*true or false*/
     if(initVal.totalTimer !== this.state.mainTimerStart){
+      this.state.refreshData = 1;
       this.state.getWorkOrder = '';
       this.state.workOrderDetails = this.getWorkOrderData();
       this.state.workOrderStatus= '';
       this.state.message= '';
       this.state.isLoggedIn= false;
-      this.state.workeOrederFetched= false;
+      //this.state.workeOrederFetched= false;
       this.state.hasCameraPermission= null;
-      this.state.lastScannedUrl= null;
+      //this.state.lastScannedUrl= null;
       this.state.isRunning= false;
       this.state.isPauseselected = false;
       this.state.isBlockselected = false;
@@ -132,28 +151,327 @@ getWorkOrderData () {
     return (<View></View>);
   }
 
+
+  componentWillMount() {
+    if (Platform.OS === 'android' && !Constants.isDevice) {
+      this.setState({
+        errorMessage: 'Oops, this will not work on Sketch in an Android emulator. Try it on your device!',
+      });
+    } else {
+      this._getLocationAsync();
+    }
+  }
+
+  _getLocationAsync = async () => {
+   let { status } = await Permissions.askAsync(Permissions.LOCATION);
+   if (status !== 'granted') {
+     this.setState({
+       errorMessage: 'Permission to access location was denied',
+     });
+   }
+
+   let location = await Location.getCurrentPositionAsync({});
+   this.setState({ location });
+ };
+
   constructor(props) {
       super(props);
       this._fetchWorkOrder = this._fetchWorkOrder.bind(this);
+      this._updateWorkOrdeAnalytics = this._updateWorkOrdeAnalytics.bind(this);
+      this._updatedWorkOrderStatus = this._updatedWorkOrderStatus.bind(this);
       //this.navigate = this.props.navigation.navigate;
+  }
+
+  refreshData(){
+    if(this.state.refreshData > 100){
+      this.state.refreshData = 0;
+    }
+    this.setState({refreshData: this.state.refreshData++});
+
+    this.updateAllFlag();
+    this._fetchWorkOrder();
   }
 
   scanAnotherWorkOrder(){
     this.setState({workeOrederFetched: false});
     this.updateAllFlag();
+    this.state.workeOrederFetched= false;
+    this._requestCameraPermission();
+  }
+
+  _setStateCreated(response){
+    this.updateAllFlag();
+    this.setState({workOrderStatus: 'Created'});
+    this.state.workOrderStatus = 'Created';
+  }
+
+  _setStateStart(response){
+    this.updateAllFlag();
+    this.setState({firstTime: true});
+    this.state.firstTime = true;
+
+    //start Time
+    this.setState({startTimer: new Date(response.workOrderStatuses[1].createdTime)});
+    this.state.startTimer = new Date(response.workOrderStatuses[1].createdTime);
+
+    //Main Time
+    this.setState({ mainTime: (response.workOrdeAnalytics[0].wrenchTime)});
+    this.state.mainTime = response.workOrdeAnalytics[0].wrenchTime;
+    this.setState({ mainTimerStart: this.toHHMMSS(this.state.mainTime) });
+
+    // Blocked Time
+    this.setState({ blockTime: (response.workOrdeAnalytics[0].blockedTime)});
+    this.state.blockTime = response.workOrdeAnalytics[0].blockedTime;
+    this.setState({ blockTimer: this.toHHMMSS(this.state.blockTime) });
+
+    // Idel Time     var startI = Moment.utc(this.state.idelTime);
+    this.setState({ idelTime: (response.workOrdeAnalytics[0].idleTime)});
+    this.state.idelTime = response.workOrdeAnalytics[0].idleTime;
+    this.setState({ idelTimer: this.toHHMMSS(this.state.idelTime) });
+
+    if(this.props.screenProps.flags.userType == 'outageEngineer'){
+      this.handlePause();
+    }
+    else{
+      this.setState({workOrderStatus: 'In Progress'});
+    }
+  }
+
+  _setStatePause(response){
+
+    this.updateAllFlag();
+    this.setState({firstTime: true});
+    this.state.firstTime = true;
+
+    //start Time
+    this.setState({startTimer: new Date(response.workOrderStatuses[1].createdTime)});
+    this.state.startTimer = new Date(response.workOrderStatuses[1].createdTime);
+
+    //Main Time
+    this.setState({ mainTime: (response.workOrdeAnalytics[0].wrenchTime)});
+    this.state.mainTime = response.workOrdeAnalytics[0].wrenchTime;
+    this.setState({ mainTimerStart: this.toHHMMSS(this.state.mainTime) });
+
+    // Blocked Time
+    this.setState({ blockTime: (response.workOrdeAnalytics[0].blockedTime)});
+    this.state.blockTime = response.workOrdeAnalytics[0].blockedTime;
+    this.setState({ blockTimer: this.toHHMMSS(this.state.blockTime) });
+
+    // Idel Time     var startI = Moment.utc(this.state.idelTime);
+    this.setState({ idelTime: (response.workOrdeAnalytics[0].idleTime)});
+    this.state.idelTime = response.workOrdeAnalytics[0].idleTime;
+    this.setState({ idelTimer: this.toHHMMSS(this.state.idelTime) });
+
+    if(this.props.screenProps.flags.userType == 'outageEngineer'){
+      this.handlePlay();
+    }
+    else{
+      this.setState({workOrderStatus: 'Pause'});
+      this.state.workOrderStatus = 'Pause';
+    }
+  }
+
+  _setStateBlocked(response){
+
+    this.updateAllFlag();
+    this.setState({firstTime: true});
+    this.state.firstTime = true;
+
+    //start Time
+    this.setState({startTimer: new Date(response.workOrderStatuses[1].createdTime)});
+    this.state.startTimer = new Date(response.workOrderStatuses[1].createdTime);
+
+    //Main Time
+    this.setState({ mainTime: (response.workOrdeAnalytics[0].wrenchTime)});
+    this.state.mainTime = response.workOrdeAnalytics[0].wrenchTime;
+    this.setState({ mainTimerStart: this.toHHMMSS(this.state.mainTime) });
+
+    // Blocked Time
+    this.setState({ blockTime: (response.workOrdeAnalytics[0].blockedTime)});
+    this.state.blockTime = response.workOrdeAnalytics[0].blockedTime;
+    this.setState({ blockTimer: this.toHHMMSS(this.state.blockTime) });
+
+    // Idel Time     var startI = Moment.utc(this.state.idelTime);
+    this.setState({ idelTime: (response.workOrdeAnalytics[0].idleTime)});
+    this.state.idelTime = response.workOrdeAnalytics[0].idleTime;
+    this.setState({ idelTimer: this.toHHMMSS(this.state.idelTime) });
+
+    if(this.props.screenProps.flags.userType == 'outageEngineer'){
+      this.handleBlocked();
+    }
+    else{
+      this.setState({workOrderStatus: 'Blocked'});
+    }
+  }
+
+  _setStateResume(response){
+    this.updateAllFlag();
+    this.setState({firstTime: true});
+    this.state.firstTime = true;
+
+    //start Time
+    this.setState({startTimer: new Date(response.workOrderStatuses[1].createdTime)});
+    this.state.startTimer = new Date(response.workOrderStatuses[1].createdTime);
+
+    //Main Time
+    this.setState({ mainTime: (response.workOrdeAnalytics[0].wrenchTime)});
+    this.state.mainTime = response.workOrdeAnalytics[0].wrenchTime;
+    this.setState({ mainTimerStart: this.toHHMMSS(this.state.mainTime) });
+    this.state.mainTime = response.workOrdeAnalytics[0].wrenchTime;
+    this.state.mainTimerStart = this.toHHMMSS(this.state.mainTime);
+
+    // Blocked Time
+    this.setState({ blockTime: (response.workOrdeAnalytics[0].blockedTime)});
+    this.state.blockTime = response.workOrdeAnalytics[0].blockedTime;
+    this.setState({ blockTimer: this.toHHMMSS(this.state.blockTime) });
+
+    // Idel Time     var startI = Moment.utc(this.state.idelTime);
+    this.setState({ idelTime: (response.workOrdeAnalytics[0].idleTime)});
+    this.state.idelTime = response.workOrdeAnalytics[0].idleTime;
+    this.setState({ idelTimer: this.toHHMMSS(this.state.idelTime) });
+
+    if(this.props.screenProps.flags.userType == 'outageEngineer'){
+      this.handleUnblocked();
+    }
+    else{
+      this.setState({workOrderStatus: 'In Progress'});
+    }
+  }
+
+  _setStateCompleted(response){
+    this.updateAllFlag();
+    this.setState({firstTime: true});
+    this.state.firstTime = true;
+
+    //start Time
+    this.setState({startTimer: new Date(response.workOrderStatuses[1].createdTime)});
+    this.state.startTimer = new Date(response.workOrderStatuses[1].createdTime);
+
+    //Main Time
+    this.setState({ mainTime: (response.workOrdeAnalytics[0].wrenchTime)});
+    this.state.mainTime = response.workOrdeAnalytics[0].wrenchTime;
+    this.setState({ mainTimerStart: this.toHHMMSS(this.state.mainTime) });
+
+    // Blocked Time
+    this.setState({ blockTime: (response.workOrdeAnalytics[0].blockedTime)});
+    this.state.blockTime = response.workOrdeAnalytics[0].blockedTime;
+    this.setState({ blockTimer: this.toHHMMSS(this.state.blockTime) });
+
+    // Idel Time     var startI = Moment.utc(this.state.idelTime);
+    this.setState({ idelTime: (response.workOrdeAnalytics[0].idleTime)});
+    this.state.idelTime = response.workOrdeAnalytics[0].idleTime;
+    this.setState({ idelTimer: this.toHHMMSS(this.state.idelTime) });
+
+    this.setState({ workOrderStatus: 'Completed'});
+    this.state.workOrderStatus = 'Completed';
+
+    if(this.props.screenProps.flags.userType == 'outageEngineer'){
+      this._WorkOrderComplete();
+    }
+    else{
+      this.setState({workOrderStatus: 'Completed'});
+      this.setState({isWorkOrderDone: true});
+    }
+  }
+
+  mapWorkorderResponce(response){
+
+  }
+  getCurrentStatus(mappedResponce){
+    console.log("Inside getCurrentStatus");
+    console.log(mappedResponce);
+      if(mappedResponce.workOrderStatuses.length > 0){
+        return mappedResponce.workOrderStatuses[mappedResponce.workOrderStatuses.length-1].workOrderStatus;
+      }
+      return null;
+  }
+
+  updateMappedResponce(mappedResponce){
+    let currentStatus = this.getCurrentStatus(mappedResponce);
+    if( currentStatus == null){
+      return null;
+    }
+    switch(currentStatus) {
+        case 'CREATED':
+            this._setStateCreated(mappedResponce);
+            break;
+        case 'STARTED':
+            this._setStateStart(mappedResponce);
+            break;
+        case 'PAUSED':
+            this._setStatePause(mappedResponce);
+            break;
+        case 'BLOCKED':
+            this._setStateBlocked(mappedResponce);
+            break;
+        case 'RESUME':
+            this._setStateResume(mappedResponce);
+            break;
+        case 'COMPLETED':
+            this._setStateCompleted(mappedResponce);
+            break;
+        default:
+            break;
+      }
+  }
+
+  _updatedWorkOrderStatus = (_status,_reason,_notes) => {
+
+    if(this.props.screenProps.flags.userType == 'outageEngineer'){
+
+      let text = 'Waiting..';
+
+      if (this.state.location) {
+        text = JSON.stringify(this.state.location);
+      }
+
+
+      console.log('location',text);
+
+      let workorderNo = (this.state.lastScannedUrl.split(':')[1]).replace(/\s/g, '');
+      let updatedUrl = 'https://outage-management-service.run.aws-usw02-pr.ice.predix.io/workorder/' + workorderNo + '/status';
+      let wOStatus = _status;
+
+      var data = {
+        "createdBy": 'Andrew Johnson',
+        "notes": _notes,
+        "reason": _reason,
+        "workOrderStatus": wOStatus,
+        "gpsCoordinates":text
+      }
+
+      return fetch(updatedUrl, {
+        method: "PUT",
+        headers: { 'Accept': 'application/json','Content-Type': 'application/json',},
+        body:  JSON.stringify(data)
+      })
+      .then(function(response){
+        console.log(response);
+        return response.json();
+      });
+    }
   }
 
   _fetchWorkOrder = () => {
     console.log("Angesh ");
     console.log(this.state.lastScannedUrl);
-    Api.getItems('https://outage-management-service.run.aws-usw02-pr.ice.predix.io/workorder/1')
+    let workorderNo = (this.state.lastScannedUrl.split(':')[1]).replace(/\s/g, '');
+
+    console.log(workorderNo);
+    let updatedUrl = 'https://outage-management-service.run.aws-usw02-pr.ice.predix.io/workorder/' + workorderNo;
+
+    Api.getItems(updatedUrl)
    .then((response) => {
      console.log("After Call Angesh ");
      console.log(response);
-     response = JSON.stringify(this.getWorkOrderData());
-     this.state.workOrderDetails = response;
-     console.log(response);
+
+     this.state.responce = response;
+     //response = JSON.stringify(this.getWorkOrderData());
+     //let mappedResponce = this.mapWorkorderResponce(response);
+
+     this.updateMappedResponce(response);
      this.setState({workeOrederFetched: true });
+
    }).catch((error) => {
                 console.log(error);
     });
@@ -223,15 +541,25 @@ getWorkOrderData () {
     var startM = Moment.utc(this.state.mainTimerStart);
 
     var diffM = Moment(endM).unix() - Moment(startM).unix();
-    this.setState({ mainTime: (diffM + this.state.mainTime)});
+    if(!isNaN(diffM)){
+      diffM = diffM + this.state.mainTime;
+    }
+    else{
+      diffM = this.state.mainTime;
+    }
+    this.setState({ mainTime: diffM});
 
     this.setState({
         blockTimerStart: new Date(),
         startTimer: new Date(),
         isBlocked: true
     });
+
+
     this.setState({isBlockselected: false});
     this.setState({workOrderStatus: 'Blocked'});
+
+    this._updatedWorkOrderStatus('BLOCKED',this.state.selectedOption,this.state.blockedReasonText);
 
     this.blockInterval = setInterval (() => {
       // Main
@@ -239,7 +567,13 @@ getWorkOrderData () {
       var start = Moment.utc(this.state.blockTimerStart);
 
       var currentTimediff = Moment(end).unix() - Moment(start).unix();
-      currentTimediff = currentTimediff + this.state.blockTime;
+      if(!isNaN(currentTimediff)){
+        currentTimediff = currentTimediff + this.state.blockTime;
+      }
+      else{
+        currentTimediff = this.state.blockTime;
+      }
+
       this.setState({ blockTimer: this.toHHMMSS(currentTimediff) });
     },1000);
   }
@@ -254,13 +588,21 @@ getWorkOrderData () {
     var start = Moment.utc(this.state.blockTimerStart);
 
     var diff = Moment(end).unix() - Moment(start).unix();
-    this.setState({ blockTime: (diff + this.state.blockTime)});
+
+    if(!isNaN(diff)){
+      diff = diff + this.state.blockTime;
+    }
+    else{
+      diff = this.state.blockTime;
+    }
+    this.setState({ blockTime: diff});
 
     this.setState({
       mainTimerStart: new Date(),
       isRunning: true
     });
 
+    this._updatedWorkOrderStatus('RESUME','','');
     this.interval = setInterval (() => {
 
       // Main
@@ -268,7 +610,13 @@ getWorkOrderData () {
       var start = Moment.utc(this.state.mainTimerStart);
 
       var currentTimediff = Moment(end).unix() - Moment(start).unix();
-      currentTimediff = currentTimediff + this.state.mainTime;
+      if(!isNaN(currentTimediff)){
+        currentTimediff = currentTimediff + this.state.mainTime;
+      }
+      else{
+        currentTimediff = this.state.mainTime;
+      }
+
       this.setState({ mainTimer: this.toHHMMSS(currentTimediff) });
 
     },1000);
@@ -281,10 +629,15 @@ getWorkOrderData () {
        // we need to save key for the next time
       this.setState({firstTime: true});
       this.setState({startTimer: new Date()});
+      console.log("Inside handlePause");
+    }
+
+    if(this.state.workOrderStatus == 'Created'){
+      this.setState({startTimer: new Date()});
+      this.state.startTimer =new Date();
     }
 
     this.setState({isPauseselected: false});
-    this.setState({workOrderStatus: 'In Progress'});
     this.setState({
       mainTimerStart: new Date(),
       isRunning: true
@@ -294,9 +647,22 @@ getWorkOrderData () {
     var startI = Moment.utc(this.state.idelTimerStart);
 
     var diff = Moment(endI).unix() - Moment(startI).unix();
+
     if(!isNaN(diff)){
       this.setState({ idelTime: (diff + this.state.idelTime)});
     }
+
+    console.log(this.state.workOrderStatus);
+    if(this.state.workOrderStatus == 'Created'){
+      console.log(' Inside created');
+      this._updatedWorkOrderStatus('STARTED','','');
+    }
+    else{
+      console.log(' Inside not Created');
+      this._updatedWorkOrderStatus('RESUME','','');
+    }
+
+    this.setState({workOrderStatus: 'In Progress'});
 
     this.interval = setInterval (() => {
 
@@ -305,11 +671,14 @@ getWorkOrderData () {
       var start = Moment.utc(this.state.mainTimerStart);
 
       var currentTimediff = Moment(end).unix() - Moment(start).unix();
-      currentTimediff = currentTimediff + this.state.mainTime;
+
+      if(!isNaN(currentTimediff)){
+        currentTimediff = currentTimediff + this.state.mainTime;
+      }
+
       this.setState({ mainTimer: this.toHHMMSS(currentTimediff) });
 
     },1000);
-        // }
   }
 
   handlePlay(){
@@ -317,17 +686,21 @@ getWorkOrderData () {
 
     if(!this.state.firstTime) { // first time
       // we need to save key for the next time
+      console.log('handlePlay');
       this.setState({firstTime: true});
       this.setState({startTimer: new Date()});
       this.setState({workOrderStatus: 'Created'});
+      this.state.workOrderStatus = 'Created';
     }
     else{
       this.setState({workOrderStatus: 'Pause'});
+      this.state.workOrderStatus = 'Pause';
     }
 
     this.setState({isPauseselected: false});
     this.setState({
       idelTimerStart: new Date(),
+      mainTimerStart: new Date(),
       isRunning: false });
 
     // To set main Timer
@@ -335,7 +708,16 @@ getWorkOrderData () {
     var start = Moment.utc(this.state.mainTimerStart);
 
     var diff = Moment(end).unix() - Moment(start).unix();
-    this.setState({ mainTime: (diff + this.state.mainTime)});
+
+    if(!isNaN(diff)){
+      diff = diff + this.state.mainTime;
+    }
+    else{
+      diff = this.state.mainTime;
+    }
+    this.setState({ mainTime: diff});
+
+    this._updatedWorkOrderStatus('PAUSED',this.state.selectedOption,this.state.pauseReasonText);
 
     this.idelInterval = setInterval (() => {
 
@@ -344,10 +726,37 @@ getWorkOrderData () {
       var startI = Moment.utc(this.state.idelTimerStart);
 
       var currentTimediff = Moment(endI).unix() - Moment(startI).unix();
-      currentTimediff = currentTimediff + this.state.idelTime;
+
+      if(!isNaN(currentTimediff)){
+        currentTimediff = currentTimediff + this.state.idelTime;
+      }
+      else{
+        currentTimediff = this.state.idelTime;
+      }
       this.setState({ idelTimer: this.toHHMMSS(currentTimediff) });
 
     },1000);
+  }
+
+  _updateWorkOrdeAnalytics(response){
+    //start Time
+    this.setState({startTimer: new Date(response.workOrderStatuses[1].createdTime)});
+    this.state.startTimer = new Date(response.workOrderStatuses[1].createdTime);
+
+    //Main Time
+    this.setState({ mainTime: (response.workOrdeAnalytics[0].wrenchTime)});
+    this.state.mainTime = response.workOrdeAnalytics[0].wrenchTime;
+    this.setState({ mainTimerStart: this.toHHMMSS(this.state.mainTime) });
+
+    // Blocked Time
+    this.setState({ blockTime: (response.workOrdeAnalytics[0].blockedTime)});
+    this.state.blockTime = response.workOrdeAnalytics[0].blockedTime;
+    this.setState({ blockTimer: this.toHHMMSS(this.state.blockTime) });
+
+    // Idel Time     var startI = Moment.utc(this.state.idelTime);
+    this.setState({ idelTime: (response.workOrdeAnalytics[0].idleTime)});
+    this.state.idelTime = response.workOrdeAnalytics[0].idleTime;
+    this.setState({ idelTimer: this.toHHMMSS(this.state.idelTime) });
   }
 
   // End Timer
@@ -355,14 +764,30 @@ getWorkOrderData () {
   _WorkOrderComplete(){
     this.clearAllInterval();
 
-    this.setState({workOrderStatus: 'Completed'});
-
     var endM = Moment.utc(new Date());
     var startM = Moment.utc(this.state.mainTimerStart);
 
     var diffM = Moment(endM).unix() - Moment(startM).unix();
-    this.setState({ mainTime: (diffM + this.state.mainTime)});
 
+    if(!isNaN(diffM)){
+      diffM = diffM + this.state.mainTime;
+    }
+    else{
+      diffM = this.state.mainTime;
+    }
+
+    this.setState({ mainTime: diffM});
+
+    console.log('this.state.workOrderStatus: ',this.state.workOrderStatus);
+
+    if(this.state.workOrderStatus != 'Completed'){
+      this._updatedWorkOrderStatus('COMPLETED','','').then((response) => {
+        this._updateWorkOrdeAnalytics();
+      })
+
+    }
+
+    this.setState({workOrderStatus: 'Completed'});
     this.setState({isWorkOrderDone: true});
   }
 
@@ -387,7 +812,14 @@ _cancleBlocked(){
   var startM = Moment.utc(this.state.mainTimerStart);
 
   var diffM = Moment(endM).unix() - Moment(startM).unix();
-  this.setState({ mainTime: (diffM + this.state.mainTime)});
+
+  if(!isNaN(diffM)){
+    diffM = diffM + this.state.mainTime;
+  }
+  else{
+    diffM = this.state.mainTime;
+  }
+  this.setState({ mainTime: diffM});
   this.setState({isBlockselected: false});
 
   this.handlePause();
@@ -399,7 +831,13 @@ _canclePause(){
   var startM = Moment.utc(this.state.mainTimerStart);
 
   var diffM = Moment(endM).unix() - Moment(startM).unix();
-  this.setState({ mainTime: (diffM + this.state.mainTime)});
+  if(!isNaN(diffM)){
+    diffM = diffM + this.state.mainTime;
+  }
+  else{
+    diffM = this.state.mainTime;
+  }
+  this.setState({ mainTime: diffM});
   this.setState({isPauseselected: false});
 
   this.handlePause();
@@ -541,7 +979,7 @@ _renderWorkOrder(){
               style={styles.image}
               source={require('../assets/images/Users-Checked-User-icon.png')}
             />
-            <Text style={styles.homeScreenTitleTexts}>Angesh Vikram
+            <Text style={styles.homeScreenTitleTexts}>Andrew Johnson
             </Text>
           </Text>
         </View>
@@ -786,12 +1224,268 @@ _renderWorkOrder(){
   );
 }
 
+_getProgressBar(){
+
+console.log("_getProgressBar");
+  var wtLabel = 'WT';
+  var btLabel = '';
+  var itLabel = '';
+  var ttLabel = '';
+  var etLabel = '';
+  var ptLabel = '';
+
+  var wtY = 0;
+  var btY = 0;
+  var itY = 0;
+  var ttY = 0;
+  var etY = 0;
+  var ptY = 0;
+
+  var marginTopVal = -140;
+  etY = this.state.responce.estimatedCompletionTime;
+  etY = 15;
+  if(this.state.workOrderStatus == 'Created'){
+      marginTopVal = -70;
+      wtLabel = '';
+      btLabel = '';
+      itLabel = '';
+      ttLabel = '';
+      etLabel = 'ET';
+      ptLabel = '';
+  }
+  else{
+    wtY = this.state.responce.workOrdeAnalytics[0].wrenchTime;
+    btY = this.state.responce.workOrdeAnalytics[0].blockedTime;
+    itY = this.state.responce.workOrdeAnalytics[0].idleTime;
+    //ptY = this.state.responce.workOrdeAnalytics[0].projectedCompletionTime;
+    ptY = 0;
+  }
+
+  //
+
+  var currentTime = Moment.utc(new Date());
+  var lastTime = Moment.utc(new Date(this.state.responce.workOrderStatuses[this.state.responce.workOrderStatuses.length-1].createdTime));
+  let currentStatus = this.getCurrentStatus(this.state.responce);
+  currentTimeDiff = currentTime.unix() - lastTime.unix();
+
+  if( currentStatus == null){
+    return null;
+  }
+  switch(currentStatus) {
+      case 'STARTED':
+          wtY = this.state.responce.workOrdeAnalytics[0].wrenchTime;
+          wtY = wtY + currentTimeDiff;
+          break;
+      case 'PAUSED':
+          itY = this.state.responce.workOrdeAnalytics[0].idleTime;
+          itY = itY + currentTimeDiff;
+          break;
+      case 'BLOCKED':
+          btY = this.state.responce.workOrdeAnalytics[0].idleTime;
+          btY = btY + currentTimeDiff;
+          break;
+      case 'RESUME':
+          wtY = this.state.responce.workOrdeAnalytics[0].wrenchTime;
+          wtY = wtY + currentTimeDiff;
+          break;
+      case 'COMPLETED':
+          break;
+      default:
+          break;
+    }
+
+  //
+
+  return (
+    <View style={{marginTop:marginTopVal,marginBottom:-90}}>
+      <VictoryStack
+        horizontal
+        style={{
+          data: { stroke: "black", strokeWidth: 2 }
+        }}
+        style={{data: {width: 30},labels: {fontSize: 24}}}
+        colorScale={["green","tomato", "orange","gray","red"]}
+        >
+        <VictoryBar
+          labelComponent={<CustomLabel offset={[25,55]}/>}
+          data={[{x: "a", y: wtY , label: wtLabel}]}
+        />
+        <VictoryBar
+          labelComponent={<CustomLabel offset={[25,35]}/>}
+          data={[{x: "a", y: itY, label: itLabel}]}
+        />
+        <VictoryBar
+          labelComponent={<CustomLabel offset={[25,55]}/>}
+          data={[{x: "a", y: btY , label: btLabel}]}
+        />
+        <VictoryBar
+          style={{ data: { opacity: .3 } }}
+          labelComponent={<CustomLabel offset={[25,35]}/>}
+          data={[{x: "a", y: etY, label: etLabel}]}
+        />
+        <VictoryBar
+          style={{ data: { opacity: .5 } }}
+          labelComponent={<CustomLabel offset={[25,40]}/>}
+          data={[{x: "a", y: ptY, label: ptLabel}]}
+        />
+      </VictoryStack>
+    </View>
+
+  );
+}
+
+_renderManagerWorkOrder(){
+
+
+  var wtY = 0;
+  var btY = 0;
+  var itY = 0;
+  var ttY = 0;
+  var etY = 0;
+  var ptY = 0;
+
+  etY = this.state.responce.estimatedCompletionTime;
+  etY = 15;
+  if(this.state.workOrderStatus == 'Created'){
+  }
+  else{
+    wtY = this.state.responce.workOrdeAnalytics[0].wrenchTime;
+    btY = this.state.responce.workOrdeAnalytics[0].blockedTime;
+    itY = this.state.responce.workOrdeAnalytics[0].idleTime;
+    //ptY = this.state.responce.workOrdeAnalytics[0].projectedCompletionTime;
+    ptY = 0;
+  }
+
+  //
+
+  var currentTime = Moment.utc(new Date());
+  var lastTime = Moment.utc(new Date(this.state.responce.workOrderStatuses[this.state.responce.workOrderStatuses.length-1].createdTime));
+  let currentStatus = this.getCurrentStatus(this.state.responce);
+  currentTimeDiff = currentTime.unix() - lastTime.unix();
+
+  if( currentStatus == null){
+    return null;
+  }
+  switch(currentStatus) {
+      case 'STARTED':
+          wtY = this.state.responce.workOrdeAnalytics[0].wrenchTime;
+          wtY = wtY + currentTimeDiff;
+          break;
+      case 'PAUSED':
+          itY = this.state.responce.workOrdeAnalytics[0].idleTime;
+          itY = itY + currentTimeDiff;
+          break;
+      case 'BLOCKED':
+          btY = this.state.responce.workOrdeAnalytics[0].idleTime;
+          btY = btY + currentTimeDiff;
+          break;
+      case 'RESUME':
+          wtY = this.state.responce.workOrdeAnalytics[0].wrenchTime;
+          wtY = wtY + currentTimeDiff;
+          break;
+      case 'COMPLETED':
+          break;
+      default:
+          break;
+    }
+
+
+
+  console.log("_renderManagerWorkOrder");
+    pieData = [];
+    pieColorScale = [];
+    if(wtY > 0){
+      pieData.push({x: "Wrench Time", y: wtY});
+      pieColorScale.push("#228B22");
+    }
+    if(itY > 0){
+      pieData.push({x: "Idle Time", y: itY});
+      pieColorScale.push("#F66D3B");
+    }
+    if(btY > 0 ){
+      pieData.push({x: "Blocked Time", y: btY});
+      pieColorScale.push("#D73C4C");
+    }
+
+    return (
+      <View style={styles.container}>
+        <KeyboardAwareScrollView>
+          <View>
+            <View>
+              <Text style={styles.textright}>
+                <InlineImage
+                  style={styles.image}
+                  source={require('../assets/images/Users-Checked-User-icon.png')}
+                />
+                <Text style={styles.homeScreenTitleTexts}>Andrew Johnson
+                </Text>
+              </Text>
+            </View>
+            <Text style={styles.homeScreenTitleTexts}>
+                Outage Number: <Text style={styles.homeScreenTexts}>{this.state.responce.outageInfo.outageDesc}</Text>
+            </Text>
+            <Text style={styles.homeScreenWOTitleTexts}>
+                Workorder Number: <Text style={styles.homeScreenTexts}>{this.state.responce.workDetails}</Text>
+            </Text>
+            <View>
+              <Text style={styles.homeScreenWSTexts}>
+                Current Status: <Text style={styles.homeScreenTexts}>{this.state.workOrderStatus}</Text>
+              </Text>
+              <View>
+                {!(this.state.workOrderStatus == 'Created') && (
+                  <View>
+                    <View>
+                      <View style={{marginTop:-30}}>
+                        <VictoryPie
+                          height={220}
+                          style={{
+                            data: {
+                              stroke: (data) => data.y > 75 ? "black" : "none"
+                            }
+                          }}
+                          innerRadius={20}
+                          data={pieData}
+                          colorScale={pieColorScale}
+                        />
+                      </View>
+                    </View>
+                  </View>
+                )}
+                {this._getProgressBar()}
+                <View style={{flex: 1,flexDirection: 'row'}}>
+                  <View >
+                    <View style={styles.PauseCancleBtn}>
+                      <Button
+                        title="Refresh Status"
+                        color='white'
+                        onPress={this.refreshData.bind(this)}
+                      />
+                    </View>
+                  </View>
+                  <View >
+                    <View style={styles.PauseContinueBtn}>
+                      <Button
+                        title="Re-Scan WO"
+                        color='white'
+                        onPress={this.scanAnotherWorkOrder.bind(this)}
+                      />
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </View>
+        </KeyboardAwareScrollView>
+      </View>
+    );
+  }
+
   render() {
     // If dimensions is defined, render the real view otherwise the dummy view
     //this.setState({ isLoggedIn: this.props.screenProps.flags.userLogInFlag});
     //this.setState({ isLoggedIn: this.props.screenProps.flags.userLogInFlag});
-    console.log(this.props.screenProps.flags.userLogInFlag);
-    console.log(this.props.screenProps.flags.userType);
+    //console.log(this.props.screenProps.flags.userLogInFlag);
+    //console.log(this.props.screenProps.flags.userType);
     return (
       <View style={styles.container}>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -852,10 +1546,50 @@ _renderWorkOrder(){
                     <KeyboardAwareScrollView>
                       {this.updateAllFlag()}
                       <View>
-                        <Text
-                          style={{flex: 0,fontSize: 27, marginLeft: 30}}>
-                            WorkOrder Report:
-                        </Text>
+                        {!this.state.workeOrederFetched && (
+                          <View>
+                            <KeyboardAwareScrollView>
+                              <View>
+                                <View style={styles.container_view}>
+                                  {this.state.hasCameraPermission === null
+                                    ? <Text>Requesting for camera permission</Text>
+                                    : this.state.hasCameraPermission === false
+                                    ? <Text style={{ color: '#fff' }}>
+                                        Camera permission is not granted
+                                      </Text>
+                                    : <BarCodeScanner
+                                        onBarCodeRead={this._handleBarCodeRead}
+                                        style={{
+                                          height: (Dimensions.get('window').height/2),
+                                          width: Dimensions.get('window').width,
+                                        }}
+                                      />
+                                  }
+                                  {this._maybeRenderUrl()}
+                                  <StatusBar hidden />
+                                </View>
+                                <View style={styles.getWorkOrderBtnView}>
+                                  <Button
+                                    style={styles.getWorkOrderBtn}
+                                    title="scan WorkOrder"
+                                    color='white'
+                                    onPress={this._fetchMyWorkOrder}
+                                    fontWeight='bold'
+                                  />
+                                </View>
+                              </View>
+                            </KeyboardAwareScrollView>
+                          </View>
+                        )}
+                        {!!this.state.workeOrederFetched && (
+                          <View>
+                            {!!this.state.refreshData && (
+                              <View>
+                                {this._renderManagerWorkOrder()}
+                              </View>
+                            )}
+                          </View>
+                        )}
                       </View>
                     </KeyboardAwareScrollView>
                   )}
