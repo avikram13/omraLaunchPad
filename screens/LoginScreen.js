@@ -62,6 +62,7 @@ export default class Login extends React.Component {
         this.setState({ isLoggingIn: true });
 
         this.props.navigation.navigate('WorkOrder');
+        //this.props.navigation.navigate('Review');
       }
       else{
         this.setState({incorrectMessage: 'In Correct userID or Password'});

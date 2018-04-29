@@ -203,6 +203,7 @@ getWorkOrderData () {
     this.updateAllFlag();
     this.setState({workOrderStatus: 'Created'});
     this.state.workOrderStatus = 'Created';
+    this.props.screenProps.updateScannedUrlWorkOrderStatus('Created');
   }
 
   _setStateStart(response){
@@ -234,6 +235,8 @@ getWorkOrderData () {
     }
     else{
       this.setState({workOrderStatus: 'In Progress'});
+      this.props.screenProps.updateScannedUrlWorkOrderStatus('In Progress');
+
     }
   }
 
@@ -268,6 +271,7 @@ getWorkOrderData () {
     else{
       this.setState({workOrderStatus: 'Pause'});
       this.state.workOrderStatus = 'Pause';
+      this.props.screenProps.updateScannedUrlWorkOrderStatus('Pause');
     }
   }
 
@@ -301,6 +305,8 @@ getWorkOrderData () {
     }
     else{
       this.setState({workOrderStatus: 'Blocked'});
+      this.props.screenProps.updateScannedUrlWorkOrderStatus('Blocked');
+
     }
   }
 
@@ -335,6 +341,7 @@ getWorkOrderData () {
     }
     else{
       this.setState({workOrderStatus: 'In Progress'});
+      this.props.screenProps.updateScannedUrlWorkOrderStatus('Blocked');
     }
   }
 
@@ -364,6 +371,7 @@ getWorkOrderData () {
 
     this.setState({ workOrderStatus: 'Completed'});
     this.state.workOrderStatus = 'Completed';
+    this.props.screenProps.updateScannedUrlWorkOrderStatus('Completed');
 
     if(this.props.screenProps.flags.userType == 'outageEngineer'){
       this._WorkOrderComplete();
@@ -371,6 +379,8 @@ getWorkOrderData () {
     else{
       this.setState({workOrderStatus: 'Completed'});
       this.setState({isWorkOrderDone: true});
+      this.props.screenProps.updateScannedUrlWorkOrderStatus('Completed');
+
     }
   }
 
@@ -471,6 +481,8 @@ getWorkOrderData () {
 
      this.updateMappedResponce(response);
      this.setState({workeOrederFetched: true });
+     this.props.screenProps.updateScannedUrlData(this.state.lastScannedUrl,response,response.workDetails,
+       response.outageInfo.outageDesc);
 
    }).catch((error) => {
                 console.log(error);
@@ -506,6 +518,7 @@ getWorkOrderData () {
     console.log("I am inside _handleBarCodeRead");
     if (result.data !== this.state.lastScannedUrl) {
       LayoutAnimation.spring();
+      this.props.screenProps.updateScannedUrlData(result.data,'','','');
       this.setState({ lastScannedUrl: result.data });
     }
   };
@@ -559,6 +572,8 @@ getWorkOrderData () {
     this.setState({isBlockselected: false});
     this.setState({workOrderStatus: 'Blocked'});
 
+    this.props.screenProps.updateScannedUrlWorkOrderStatus('Blocked');
+
     this._updatedWorkOrderStatus('BLOCKED',this.state.selectedOption,this.state.blockedReasonText);
 
     this.blockInterval = setInterval (() => {
@@ -583,6 +598,7 @@ getWorkOrderData () {
     this.clearAllInterval();
     this.setState({ isBlocked: false });
     this.setState({workOrderStatus: 'In Progress'});
+    this.props.screenProps.updateScannedUrlWorkOrderStatus('In Progress');
 
     var end = Moment.utc(new Date());
     var start = Moment.utc(this.state.blockTimerStart);
@@ -663,6 +679,7 @@ getWorkOrderData () {
     }
 
     this.setState({workOrderStatus: 'In Progress'});
+    this.props.screenProps.updateScannedUrlWorkOrderStatus('In Progress');
 
     this.interval = setInterval (() => {
 
@@ -691,10 +708,13 @@ getWorkOrderData () {
       this.setState({startTimer: new Date()});
       this.setState({workOrderStatus: 'Created'});
       this.state.workOrderStatus = 'Created';
+      this.props.screenProps.updateScannedUrlWorkOrderStatus('Created');
+
     }
     else{
       this.setState({workOrderStatus: 'Pause'});
       this.state.workOrderStatus = 'Pause';
+      this.props.screenProps.updateScannedUrlWorkOrderStatus('Pause');
     }
 
     this.setState({isPauseselected: false});

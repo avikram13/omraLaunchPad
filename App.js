@@ -7,8 +7,16 @@ import MainTabNavigator from './navigation/MainTabNavigator';
 
 flags = {
   userLogInFlag:false,
-  userType:''
+  userType:'',
+
 };
+scannedUrlData = {
+  scannedUrl:'',
+  response:'',
+  workDetails:'',
+  outageDesc:'',
+  workOrderStatus:''
+}
 
 export default class App extends React.Component {
   state = {
@@ -18,13 +26,13 @@ export default class App extends React.Component {
         super(props);
         this.updateFlag  = this.updateFlag.bind(this);
         this.getFlagValue  = this.getFlagValue.bind(this);
-        this.flags = {userLogInFlag:false,userType:''}
-    }
+        this.updateScannedUrlData  = this.updateScannedUrlData.bind(this);
+        this.getScannedUrlData  = this.getScannedUrlData.bind(this);
+        this.updateScannedUrlWorkOrderStatus = this.updateScannedUrlWorkOrderStatus.bind(this);
+        this.flags = {userLogInFlag:false,userType:''};
+        this.scannedUrlData = {scannedUrl:'',response:'',workDetails:'',outageDesc:'',workOrderStatus:''};
 
-  // componentDidMount() {
-  //             //Define some variable in your component
-  //             this.flags = {userLogInFlag:false};
-  // }
+    }
 
   updateFlag(_flagVal,_flagType){
     console.log('updateFlag: ' + _flagVal);
@@ -37,6 +45,31 @@ export default class App extends React.Component {
   getFlagValue(){
     console.log('getFlagValue: ' + this.flags.userLogInFlag);
     return this.flags;
+  }
+
+  updateScannedUrlData(_ScannedUrl,_response,_workDetails,_outageDesc){
+    console.log('_ScannedUrl: ' + _ScannedUrl);
+    this.setState({scannedUrl:_ScannedUrl});
+    this.setState({_response:_response});
+    this.setState({workDetails:_workDetails});
+    this.setState({outageDesc:_outageDesc});
+    this.scannedUrlData.scannedUrl = _ScannedUrl;
+    this.scannedUrlData.response = _response;
+    this.scannedUrlData.workDetails = _workDetails;
+    this.scannedUrlData.outageDesc = _outageDesc;
+    console.log('We pass argument from Child to Parent: ' + this.scannedUrlData.scannedUrl);
+  }
+
+  updateScannedUrlWorkOrderStatus(_workOrderStatus){
+    console.log('_workOrderStatus: ' + _workOrderStatus);
+    this.setState({workOrderStatus:_workOrderStatus});
+    this.scannedUrlData.workOrderStatus = _workOrderStatus;
+    console.log('We pass argument from Child to Parent: ' + this.scannedUrlData.scannedUrl);
+  }
+
+  getScannedUrlData(){
+    console.log('getScannedUrlData: ' + this.scannedUrlData.scannedUrl);
+    return this.scannedUrlData;
   }
 
 
@@ -58,7 +91,12 @@ export default class App extends React.Component {
           <RootNavigation
             flags = {this.flags}
             updateFlag = {this.updateFlag.bind(this)}
-            getFlagValue = {this.getFlagValue.bind(this)} />
+            getFlagValue = {this.getFlagValue.bind(this)}
+            scannedUrlData = {this.scannedUrlData}
+            updateScannedUrlData = {this.updateScannedUrlData.bind(this)}
+            updateScannedUrlWorkOrderStatus = {this.updateScannedUrlWorkOrderStatus.bind(this)}
+            getScannedUrlData = {this.getScannedUrlData.bind(this)}
+             />
         </View>
       );
     }
