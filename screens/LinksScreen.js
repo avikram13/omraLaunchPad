@@ -49,7 +49,9 @@ export default class LinksScreen extends React.Component {
       workeOrederFetched: false,
       hasCameraPermission: null,
       lastScannedUrl: null,
-      workOrderStatus: 'In Progress'
+      workOrderStatus: 'In Progress',
+      isOtherSelected: false,
+      OtherReasonText: '',
   }
 
   componentWillMount() {
@@ -160,7 +162,20 @@ export default class LinksScreen extends React.Component {
   }
 
   _reviewOther(){
-    this._updateReview('Other','{"review":"Other"}');
+    this.setState({ isOtherSelected: true});
+    this.state.isOtherSelected = true;
+    //this._updateReview('Other','{"review":"Other"}');
+  }
+
+  _handleOtherSend(){
+    this.setState({ isOtherSelected: false});
+    this.state.isOtherSelected = false;
+    this._updateReview('Other','{"review":"Other","notes":"'+this.state.OtherReasonText+'""}');
+  }
+
+  clearPauseRemarks(){
+    this.setState({ OtherReasonText: ''});
+    this.state.OtherReasonText = '';
   }
 
   _renderManagerWorkOrder(){
@@ -230,63 +245,102 @@ export default class LinksScreen extends React.Component {
               </View>
               <View style={{flex: 1,flexDirection: 'row'}}>
                 <View style={styles.reviewIconBtn}>
-                  <TouchableOpacity onPress={this._reviewPositive.bind(this)}>
-                    <View style={{flex: 1,flexDirection: 'row'}}>
+                  <View style={{flex: 1,flexDirection: 'row'}}>
+                    <TouchableOpacity onPress={this._reviewPositive.bind(this)}>
                       <InlineImage
                         style={styles.reviewImage}
                         source={require('../assets/images/Positive-icon.png')}
                       />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={this._reviewPositive.bind(this)}>
                       <View style={{marginTop:15, marginRight:10}}>
                         <Text style={styles.reviewTexts}>Happy and satisfied
                         </Text>
                       </View>
-                    </View>
-                  </TouchableOpacity>
+                    </TouchableOpacity>
+                  </View>
                 </View>
                 <View style={styles.reviewIconBtn}>
-                  <TouchableOpacity onPress={this._reviewNeutral.bind(this)}>
-                    <View style={{flex: 1,flexDirection: 'row',marginLeft:15}}>
+                  <View style={{flex: 1,flexDirection: 'row',marginLeft:15}}>
+                    <TouchableOpacity onPress={this._reviewNeutral.bind(this)}>
                       <InlineImage
                         style={styles.reviewImage}
                         source={require('../assets/images/Neutral-icon.jpeg')}
                       />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={this._reviewNeutral.bind(this)}>
                       <View style={{marginTop:15}}>
                         <Text style={styles.reviewTexts}>Neutral
                         </Text>
                       </View>
-                    </View>
-                  </TouchableOpacity>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
               <View style={{flex: 1,flexDirection: 'row'}}>
                 <View style={styles.reviewIconBtn}>
-                  <TouchableOpacity onPress={this._reviewNegative.bind(this)}>
-                    <View style={{flex: 1,flexDirection: 'row'}}>
+                  <View style={{flex: 1,flexDirection: 'row'}}>
+                    <TouchableOpacity onPress={this._reviewNegative.bind(this)}>
                       <InlineImage
                         style={styles.reviewImage}
                         source={require('../assets/images/Negative-icon.png')}
                       />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={this._reviewNegative.bind(this)}>
                       <View style={{marginTop:15, marginRight:10}}>
                         <Text style={styles.reviewTexts}>Sad and not satisfied
                         </Text>
                       </View>
-                    </View>
-                  </TouchableOpacity>
+                    </TouchableOpacity>
+                  </View>
                 </View>
                 <View style={styles.reviewIconBtn}>
-                  <TouchableOpacity onPress={this._reviewOther.bind(this)}>
-                    <View style={{flex: 1,flexDirection: 'row',marginLeft:15}}>
+                  <View style={{flex: 1,flexDirection: 'row',marginLeft:15}}>
+                    <TouchableOpacity onPress={this._reviewOther.bind(this)}>
                       <InlineImage
                         style={styles.reviewImage}
                         source={require('../assets/images/other_icon.png')}
                       />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={this._reviewOther.bind(this)}>
                       <View style={{marginTop:15}}>
                         <Text style={styles.reviewTexts}>Other
                         </Text>
                       </View>
-                    </View>
-                  </TouchableOpacity>
+                    </TouchableOpacity>
+                  </View>
                 </View>
+              </View>
+              <View>
+                {!!(this.state.isOtherSelected) && (
+                  <View>
+                    <KeyboardAwareScrollView >
+                      <View>
+                        <View style={{marginTop: 20}}>
+                          <TextInput
+                            style={styles.pauseReasonTextStyle}
+                            placeholder='Reason'
+                            multiline={true}
+                            numberOfLines={4}
+                            onChangeText={(OtherReasonText) => this.setState({OtherReasonText})}
+                            value={this.state.OtherReasonText}
+                            autoFocus={true}
+                            onFocus={this.clearOtherRemarks}
+                          />
+                        </View>
+                        <View >
+                          <View style={styles.PauseContinueBtn}>
+                            <Button
+                              title="Send"
+                              color='white'
+                              onPress={this._handleOtherSend.bind(this)}
+                            />
+                          </View>
+                        </View>
+                      </View>
+                    </KeyboardAwareScrollView>
+                  </View>
+                )}
               </View>
             </View>
           </View>
@@ -498,6 +552,7 @@ const styles = StyleSheet.create({
     marginLeft:5,
   },
   reviewTexts:{
+    color:'blue',
     fontSize: 14,
     fontWeight: 'bold',
     marginLeft:5,

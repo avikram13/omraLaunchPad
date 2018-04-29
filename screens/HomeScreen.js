@@ -864,9 +864,13 @@ _canclePause(){
 }
 
 clearPauseRemarks(){
+  this.setState({ pauseReasonText: ''});
+  this.state.pauseReasonText = '';
 }
 
 clearBlockedRemarks(){
+  this.setState({ blockedReasonText: ''});
+  this.state.blockedReasonText = '';
 }
 
 _renderBlockReason(){
