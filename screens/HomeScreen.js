@@ -482,7 +482,7 @@ getWorkOrderData () {
      this.updateMappedResponce(response);
      this.setState({workeOrederFetched: true });
      this.props.screenProps.updateScannedUrlData(this.state.lastScannedUrl,response,response.workDetails,
-       response.outageInfo.outageDesc);
+       response.outageInfo.outageDesc,true);
 
    }).catch((error) => {
                 console.log(error);
@@ -518,7 +518,7 @@ getWorkOrderData () {
     console.log("I am inside _handleBarCodeRead");
     if (result.data !== this.state.lastScannedUrl) {
       LayoutAnimation.spring();
-      this.props.screenProps.updateScannedUrlData(result.data,'','','');
+      this.props.screenProps.updateScannedUrlData(result.data,'','','',true);
       this.setState({ lastScannedUrl: result.data });
     }
   };

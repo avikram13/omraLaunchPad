@@ -15,7 +15,8 @@ scannedUrlData = {
   response:'',
   workDetails:'',
   outageDesc:'',
-  workOrderStatus:''
+  workOrderStatus:'',
+  workOrderFetchedFlag: false
 }
 
 export default class App extends React.Component {
@@ -30,7 +31,7 @@ export default class App extends React.Component {
         this.getScannedUrlData  = this.getScannedUrlData.bind(this);
         this.updateScannedUrlWorkOrderStatus = this.updateScannedUrlWorkOrderStatus.bind(this);
         this.flags = {userLogInFlag:false,userType:''};
-        this.scannedUrlData = {scannedUrl:'',response:'',workDetails:'',outageDesc:'',workOrderStatus:''};
+        this.scannedUrlData = {scannedUrl:'',response:'',workDetails:'',outageDesc:'',workOrderStatus:'',workOrderFetchedFlag:false};
 
     }
 
@@ -47,7 +48,7 @@ export default class App extends React.Component {
     return this.flags;
   }
 
-  updateScannedUrlData(_ScannedUrl,_response,_workDetails,_outageDesc){
+  updateScannedUrlData(_ScannedUrl,_response,_workDetails,_outageDesc,_workOrderFetchedFlag){
     console.log('_ScannedUrl: ' + _ScannedUrl);
     this.setState({scannedUrl:_ScannedUrl});
     this.setState({_response:_response});
@@ -57,6 +58,7 @@ export default class App extends React.Component {
     this.scannedUrlData.response = _response;
     this.scannedUrlData.workDetails = _workDetails;
     this.scannedUrlData.outageDesc = _outageDesc;
+    this.scannedUrlData.workOrderFetchedFlag = _workOrderFetchedFlag;
     console.log('We pass argument from Child to Parent: ' + this.scannedUrlData.scannedUrl);
   }
 

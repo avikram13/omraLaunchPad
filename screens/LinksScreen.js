@@ -77,6 +77,7 @@ export default class LinksScreen extends React.Component {
   constructor(props) {
       super(props);
   //    this._fetchWorkOrder = this._fetchWorkOrder.bind(this);
+  this._updateReview = this._updateReview.bind(this);
   }
 
   refreshData(){
@@ -105,6 +106,62 @@ export default class LinksScreen extends React.Component {
     return (<View></View>);
   }
 
+  _updateReview = (_reason,_reviewNotes) => {
+
+    if(this.props.screenProps.flags.userType == 'outageEngineer'){
+
+      let text = 'Waiting..';
+
+      if (this.state.location) {
+        text = JSON.stringify(this.state.location);
+      }
+
+      console.log('location',text);
+
+      let workorderNo = (this.props.screenProps.scannedUrlData.scannedUrl.split(':')[1]).replace(/\s/g, '');
+      let updatedUrl = 'https://outage-management-service.run.aws-usw02-pr.ice.predix.io/workorder/' + workorderNo + '/review';
+
+      _reviewNotes = '{"reveiw":'+_reviewNotes +',"location":'+text+'}';
+      // var data = {
+      //   "createdBy": 'Andrew Johnson',
+      //   "reviewNotes": _reviewNotes
+      // }
+
+      var data = {
+        "createdBy": 'Andrew Johnson',
+        "reason":_reason,
+        "notes":_reviewNotes
+      }
+
+      return fetch(updatedUrl, {
+        method: "PUT",
+        headers: { 'Accept': 'application/json','Content-Type': 'application/json',},
+        body:  JSON.stringify(data)
+      })
+      .then(function(response){
+        console.log(response);
+        return response.json();
+      });
+    }
+  }
+
+
+  _reviewPositive(){
+
+    this._updateReview('Happy and satisfied','{"review":"Happy and satisfied"}');
+  }
+
+  _reviewNeutral(){
+    this._updateReview('Neutral','{"review":"Neutral"}');
+  }
+
+  _reviewNegative(){
+    this._updateReview('Sad and not satisfied','{"review":"Sad and not satisfied"}');
+  }
+
+  _reviewOther(){
+    this._updateReview('Other','{"review":"Other"}');
+  }
 
   _renderManagerWorkOrder(){
 
@@ -165,6 +222,73 @@ export default class LinksScreen extends React.Component {
                 Current Status: <Text style={styles.homeScreenTexts}>{this.props.screenProps.scannedUrlData.workOrderStatus}</Text>
               </Text>
             </View>
+            <View>
+              <View style={{margin:10}}>
+                <Text>
+                  Kindly share your feedback and recommendations:
+                </Text>
+              </View>
+              <View style={{flex: 1,flexDirection: 'row'}}>
+                <View style={styles.reviewIconBtn}>
+                  <TouchableOpacity onPress={this._reviewPositive.bind(this)}>
+                    <View style={{flex: 1,flexDirection: 'row'}}>
+                      <InlineImage
+                        style={styles.reviewImage}
+                        source={require('../assets/images/Positive-icon.png')}
+                      />
+                      <View style={{marginTop:15, marginRight:10}}>
+                        <Text style={styles.reviewTexts}>Happy and satisfied
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.reviewIconBtn}>
+                  <TouchableOpacity onPress={this._reviewNeutral.bind(this)}>
+                    <View style={{flex: 1,flexDirection: 'row',marginLeft:15}}>
+                      <InlineImage
+                        style={styles.reviewImage}
+                        source={require('../assets/images/Neutral-icon.jpeg')}
+                      />
+                      <View style={{marginTop:15}}>
+                        <Text style={styles.reviewTexts}>Neutral
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              <View style={{flex: 1,flexDirection: 'row'}}>
+                <View style={styles.reviewIconBtn}>
+                  <TouchableOpacity onPress={this._reviewNegative.bind(this)}>
+                    <View style={{flex: 1,flexDirection: 'row'}}>
+                      <InlineImage
+                        style={styles.reviewImage}
+                        source={require('../assets/images/Negative-icon.png')}
+                      />
+                      <View style={{marginTop:15, marginRight:10}}>
+                        <Text style={styles.reviewTexts}>Sad and not satisfied
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.reviewIconBtn}>
+                  <TouchableOpacity onPress={this._reviewOther.bind(this)}>
+                    <View style={{flex: 1,flexDirection: 'row',marginLeft:15}}>
+                      <InlineImage
+                        style={styles.reviewImage}
+                        source={require('../assets/images/other_icon.png')}
+                      />
+                      <View style={{marginTop:15}}>
+                        <Text style={styles.reviewTexts}>Other
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
           </View>
         </KeyboardAwareScrollView>
       </View>
@@ -176,6 +300,7 @@ export default class LinksScreen extends React.Component {
 
     console.log('this.props.screenProps.scannedUrlData',this.props.screenProps.scannedUrlData);
     //this.setState({workOrderStatus: 'In Progress'});
+    //this.props.screenProps.scannedUrlData.workOrderFetchedFlag
     return (
       <View style={styles.container}>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -190,20 +315,37 @@ export default class LinksScreen extends React.Component {
                 <View>
                   {!!(this.props.screenProps.flags.userType == 'outageEngineer') && (
                     <View>
-                      {this._renderWorkOrder()}
+                      {!!this.props.screenProps.scannedUrlData.workOrderFetchedFlag && (
+                        <View>
+                          {this._renderWorkOrder()}
+                        </View>
+                      )}
+                      {!this.props.screenProps.scannedUrlData.workOrderFetchedFlag && (
+                        <View>
+                          <Text
+                            style={{flex: 0,fontSize: 27, marginLeft: 30}}>
+                              You need to scan the workorder in WorkOrder tab
+                          </Text>
+                        </View>
+                      )}
                     </View>
                   )}
                   {!!(this.props.screenProps.flags.userType == 'outageManager') && (
-                    <KeyboardAwareScrollView>
-                      {this.updateAllFlag()}
-                      <View>
-                        {!!this.state.refreshData && (
-                          <View>
-                            {this._renderManagerWorkOrder()}
-                          </View>
-                        )}
-                      </View>
-                    </KeyboardAwareScrollView>
+                    <View>
+                      {!!this.props.screenProps.scannedUrlData.workOrderFetchedFlag && (
+                        <View>
+                          {this._renderWorkOrder()}
+                        </View>
+                      )}
+                      {!this.props.screenProps.scannedUrlData.workOrderFetchedFlag && (
+                        <View>
+                          <Text
+                            style={{flex: 0,fontSize: 27, marginLeft: 30}}>
+                              You need to scan the workorder in WorkOrder tab
+                          </Text>
+                        </View>
+                      )}
+                    </View>
                   )}
                 </View>
               )}
@@ -227,54 +369,6 @@ export default class LinksScreen extends React.Component {
       </View>
     );
   }
-
-  _Hi = () =>{
-    console.log('in Hi');
-  }
-
-  _handlePressUrl = () => {
-    Alert.alert(
-      'Open this WorkOrder?',
-      this.state.lastScannedUrl,
-      [
-        {
-          text: 'Yes',
-          onPress: this._fetchWorkOrder,
-        },
-        { text: 'No', onPress: () => {console.log('Hello Angesh');this._Hi} },
-      ],
-      { cancellable: false }
-    );
-  };
-
-  _handlePressCancel = () => {
-    this.setState({ lastScannedUrl: null });
-  };
-
-  _maybeRenderUrl = () => {
-    console.log("Angesh Check");
-    console.log("lastScannedUrl: =",this.state.lastScannedUrl);
-    if (!this.state.lastScannedUrl) {
-      return;
-    }
-
-    return (
-      <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.url} onPress={this._handlePressUrl}>
-          <Text numberOfLines={1} style={styles.urlText}>
-            {this.state.lastScannedUrl}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={this._handlePressCancel}>
-          <Text style={styles.cancelButtonText}>
-            Cancel
-          </Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
 }
 
 const styles = StyleSheet.create({
@@ -302,6 +396,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#00AAFF',
     width: ((Dimensions.get('window').width/2)-10),
     borderRadius: 5,
+  },
+  reviewIconBtn:{
+    margin: 5,
+    alignSelf:'flex-start',
+    width: ((Dimensions.get('window').width/2)-10),
+    height: 40,
   },
   continueBtn:{
     backgroundColor: '#00AAFF',
@@ -373,6 +473,11 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
   },
+  reviewImage: {
+    width: 40,
+    height: 40,
+    marginLeft:10,
+  },
   textright: {
     alignSelf: 'flex-end',
     marginRight: 10,
@@ -388,6 +493,11 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   homeScreenTitleTexts:{
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginLeft:5,
+  },
+  reviewTexts:{
     fontSize: 14,
     fontWeight: 'bold',
     marginLeft:5,
