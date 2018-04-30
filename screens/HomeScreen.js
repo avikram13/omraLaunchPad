@@ -28,6 +28,7 @@ import Moment from 'moment';
 import Api from '../api/Api';
 import InlineImage from '../components/InlineImage.js';
 import { RadioButtons } from 'react-native-radio-buttons';
+import { CheckBox } from 'react-native-elements';
 
 import { VictoryBar, VictoryPie, VictoryChart, VictoryStack, VictoryLabel, VictoryContainer } from "victory-native";
 
@@ -104,6 +105,7 @@ getWorkOrderData () {
       pauseReasonTAFlag: false,
       blockedReasonText: '',
       blockedReasonTAFlag: false,
+      checked: false,
   }
 
   updateAllFlag(){
@@ -147,6 +149,7 @@ getWorkOrderData () {
       this.state.pauseReasonTAFlag= false;
       this.state.blockedReasonText= '';
       this.state.blockedReasonTAFlag= false;
+      this.state.checked= false;
     }
     return (<View></View>);
   }
@@ -447,7 +450,8 @@ getWorkOrderData () {
         "notes": _notes,
         "reason": _reason,
         "workOrderStatus": wOStatus,
-        "gpsCoordinates":text
+        "gpsCoordinates":text,
+        "isPlannedWork":this.state.checked
       }
 
       return fetch(updatedUrl, {
@@ -1013,6 +1017,16 @@ _renderWorkOrder(){
         <Text style={styles.homeScreenWOTitleTexts}>
             Workorder Number: <Text style={styles.homeScreenTexts}>{this.state.workOrderDetails.workOrderNumber}</Text>
         </Text>
+        {!this.state.isWorkOrderDone && (
+          <View style={styles.CheckBoxright}>
+            <CheckBox
+              containerStyle = {{backgroundColor:'white',borderWidth:0,paddingTop:-10}}
+              title="Un-planned"
+              checked={this.state.checked}
+              onPress={() => this.setState({ checked: !this.state.checked })}
+            />
+          </View>
+        )}
         <View>
           {!this.state.isBlockselected && (
             <View>
@@ -1785,6 +1799,12 @@ const styles = StyleSheet.create({
   image: {
     width: 10,
     height: 10,
+  },
+  CheckBoxright:{
+    alignSelf: 'flex-end',
+    marginRight: 10,
+    marginTop:-20,
+    backgroundColor: 'white',
   },
   textright: {
     alignSelf: 'flex-end',
