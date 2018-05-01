@@ -451,7 +451,7 @@ getWorkOrderData () {
         "reason": _reason,
         "workOrderStatus": wOStatus,
         "gpsCoordinates":text,
-        "isPlannedWork":plannedFlagVal
+        "unplannedWork":plannedFlagVal
       }
 
       if(this.state.checked){
@@ -1266,7 +1266,7 @@ _renderWorkOrder(){
   );
 }
 
-_getProgressBar(){
+_getProgressBar(_wtY,_btY,_itY,_etY,_ptY,_ttY,_stY){
 
 console.log("_getProgressBar");
   var wtLabel = 'WT';
@@ -1275,6 +1275,7 @@ console.log("_getProgressBar");
   var ttLabel = '';
   var etLabel = '';
   var ptLabel = '';
+  var stLabel = '';
 
   var wtY = 0;
   var btY = 0;
@@ -1282,10 +1283,11 @@ console.log("_getProgressBar");
   var ttY = 0;
   var etY = 0;
   var ptY = 0;
+  var stY = 0;
 
   var marginTopVal = -140;
-  etY = this.state.responce.estimatedCompletionTime;
-  ptY = this.state.responce.workOrdeAnalytics[0].unplannedWrenchTime;
+  etY = _etY;
+  ptY = _ptY;
   if(this.state.workOrderStatus == 'Created'){
       marginTopVal = -70;
       wtLabel = '';
@@ -1296,54 +1298,18 @@ console.log("_getProgressBar");
       ptLabel = '';
   }
   else{
-    wtY = this.state.responce.workOrdeAnalytics[0].wrenchTime;
-    btY = this.state.responce.workOrdeAnalytics[0].blockedTime;
-    itY = this.state.responce.workOrdeAnalytics[0].idleTime;
-    //ptY = this.state.responce.workOrdeAnalytics[0].projectedCompletionTime;
-    //ptY = 0;
+    wtY = _wtY;
+    btY = _btY;
+    itY = _itY;
+    stY = _stY;
   }
-
-  //
-
-  var currentTime = Moment.utc(new Date());
-  var lastTime = Moment.utc(new Date(this.state.responce.workOrderStatuses[this.state.responce.workOrderStatuses.length-1].createdTime));
-  let currentStatus = this.getCurrentStatus(this.state.responce);
-  currentTimeDiff = currentTime.unix() - lastTime.unix();
-
-  if( currentStatus == null){
-    return null;
-  }
-  switch(currentStatus) {
-      case 'STARTED':
-          wtY = this.state.responce.workOrdeAnalytics[0].wrenchTime;
-          wtY = wtY + currentTimeDiff;
-          break;
-      case 'PAUSED':
-          itY = this.state.responce.workOrdeAnalytics[0].idleTime;
-          itY = itY + currentTimeDiff;
-          break;
-      case 'BLOCKED':
-          btY = this.state.responce.workOrdeAnalytics[0].idleTime;
-          btY = btY + currentTimeDiff;
-          break;
-      case 'RESUME':
-          wtY = this.state.responce.workOrdeAnalytics[0].wrenchTime;
-          wtY = wtY + currentTimeDiff;
-          break;
-      case 'COMPLETED':
-          break;
-      default:
-          break;
-    }
-
-  //
 
   return (
     <View style={{marginTop:marginTopVal,marginBottom:-90}}>
       <VictoryStack
         horizontal
         style={{data: {width: 30},labels: {fontSize: 24}}}
-        colorScale={["#228b22","#f66d3b", "#d73c77","gray","#e51010"]}
+        colorScale={["#228b22","#f66d3b", "#d73c77","gray","#e51010","#3694db"]}
         >
         <VictoryBar
           labelComponent={<CustomLabel offset={[25,55]}/>}
@@ -1367,6 +1333,10 @@ console.log("_getProgressBar");
           labelComponent={<CustomLabel offset={[25,40]}/>}
           data={[{x: "a", y: ptY, label: ptLabel}]}
         />
+        <VictoryBar
+          style={{ data: { opacity: .3 } }}
+          data={[{x: "a", y: stY}]}
+        />
       </VictoryStack>
     </View>
 
@@ -1375,30 +1345,38 @@ console.log("_getProgressBar");
 
 _renderManagerWorkOrder(){
 
-
   var wtY = 0;
   var btY = 0;
   var itY = 0;
   var ttY = 0;
   var etY = 0;
   var ptY = 0;
+  var stY = 0;
 
   etY = this.state.responce.estimatedCompletionTime;
-  etY = 15;
+
   if(this.state.workOrderStatus == 'Created'){
   }
   else{
+    ptY = this.state.responce.workOrdeAnalytics[0].unplannedWrenchTime;
     wtY = this.state.responce.workOrdeAnalytics[0].wrenchTime;
     btY = this.state.responce.workOrdeAnalytics[0].blockedTime;
     itY = this.state.responce.workOrdeAnalytics[0].idleTime;
     //ptY = this.state.responce.workOrdeAnalytics[0].projectedCompletionTime;
-    ptY = 0;
+    //ptY = 0;
   }
 
   //
 
   var currentTime = Moment.utc(new Date());
-  var lastTime = Moment.utc(new Date(this.state.responce.workOrderStatuses[this.state.responce.workOrderStatuses.length-1].createdTime));
+  var lastTime =  Moment.utc(new Date());
+  var lastUnplannedFlag = false;
+
+  if(this.state.responce.workOrderStatuses.length > 0){
+    lastTime = Moment.utc(new Date(this.state.responce.workOrderStatuses[this.state.responce.workOrderStatuses.length-1].createdTime));
+    lastUnplannedFlag = this.state.responce.workOrderStatuses[this.state.responce.workOrderStatuses.length-1].unplannedWork;
+  }
+
   let currentStatus = this.getCurrentStatus(this.state.responce);
   currentTimeDiff = currentTime.unix() - lastTime.unix();
 
@@ -1409,20 +1387,51 @@ _renderManagerWorkOrder(){
       case 'STARTED':
           wtY = this.state.responce.workOrdeAnalytics[0].wrenchTime;
           wtY = wtY + currentTimeDiff;
+          if(lastUnplannedFlag){
+            ptY = ptY + currentTimeDiff;
+          }
+          etY = etY - (wtY+ptY+btY);
+
+          if(etY < 1){
+            etY = 0;
+          }
           break;
       case 'PAUSED':
           itY = this.state.responce.workOrdeAnalytics[0].idleTime;
           itY = itY + currentTimeDiff;
+          if(lastUnplannedFlag){
+            ptY = ptY + currentTimeDiff;
+          }
+          etY = etY - (wtY+ptY+btY);
+          if(etY < 1){
+            etY = 0;
+          }
           break;
       case 'BLOCKED':
           btY = this.state.responce.workOrdeAnalytics[0].idleTime;
           btY = btY + currentTimeDiff;
+          if(lastUnplannedFlag){
+            ptY = ptY + currentTimeDiff;
+          }
+          etY = etY - (wtY+ptY+btY);
+          if(etY < 1){
+            etY = 0;
+          }
           break;
       case 'RESUME':
           wtY = this.state.responce.workOrdeAnalytics[0].wrenchTime;
           wtY = wtY + currentTimeDiff;
+          if(lastUnplannedFlag){
+            ptY = ptY + currentTimeDiff;
+          }
+          etY = etY - (wtY+ptY+btY);
           break;
       case 'COMPLETED':
+          if(etY>0){
+            stY = etY;
+            etY = 0;
+            ptY = 0;
+          }
           break;
       default:
           break;
@@ -1490,7 +1499,7 @@ _renderManagerWorkOrder(){
                     </View>
                   </View>
                 )}
-                {this._getProgressBar()}
+                {this._getProgressBar(wtY,btY,itY,etY,ptY,ttY,stY)}
                 <View style={{flex: 1,flexDirection: 'row'}}>
                   <View >
                     <View style={styles.PauseCancleBtn}>
