@@ -444,14 +444,18 @@ getWorkOrderData () {
       let workorderNo = (this.state.lastScannedUrl.split(':')[1]).replace(/\s/g, '');
       let updatedUrl = 'https://outage-management-service.run.aws-usw02-pr.ice.predix.io/workorder/' + workorderNo + '/status';
       let wOStatus = _status;
-
+      let plannedFlagVal = this.state.checked;
       var data = {
         "createdBy": 'Andrew Johnson',
         "notes": _notes,
         "reason": _reason,
         "workOrderStatus": wOStatus,
         "gpsCoordinates":text,
-        "isPlannedWork":this.state.checked
+        "isPlannedWork":plannedFlagVal
+      }
+
+      if(this.state.checked){
+        this.state.checked= false;
       }
 
       return fetch(updatedUrl, {
@@ -995,7 +999,7 @@ _renderWorkOrder(){
   }
   if(this.state.blockTime > 0 ){
     pieData.push({x: "Blocked Time", y: this.state.blockTime});
-    pieColorScale.push("#D73C4C");
+    pieColorScale.push("#d73c77");
   }
 
   return (
@@ -1281,7 +1285,7 @@ console.log("_getProgressBar");
 
   var marginTopVal = -140;
   etY = this.state.responce.estimatedCompletionTime;
-  etY = 15;
+  ptY = this.state.responce.workOrdeAnalytics[0].unplannedWrenchTime;
   if(this.state.workOrderStatus == 'Created'){
       marginTopVal = -70;
       wtLabel = '';
@@ -1296,7 +1300,7 @@ console.log("_getProgressBar");
     btY = this.state.responce.workOrdeAnalytics[0].blockedTime;
     itY = this.state.responce.workOrdeAnalytics[0].idleTime;
     //ptY = this.state.responce.workOrdeAnalytics[0].projectedCompletionTime;
-    ptY = 0;
+    //ptY = 0;
   }
 
   //
@@ -1338,11 +1342,8 @@ console.log("_getProgressBar");
     <View style={{marginTop:marginTopVal,marginBottom:-90}}>
       <VictoryStack
         horizontal
-        style={{
-          data: { stroke: "black", strokeWidth: 2 }
-        }}
         style={{data: {width: 30},labels: {fontSize: 24}}}
-        colorScale={["green","tomato", "orange","gray","red"]}
+        colorScale={["#228b22","#f66d3b", "#d73c77","gray","#e51010"]}
         >
         <VictoryBar
           labelComponent={<CustomLabel offset={[25,55]}/>}
@@ -1362,7 +1363,7 @@ console.log("_getProgressBar");
           data={[{x: "a", y: etY, label: etLabel}]}
         />
         <VictoryBar
-          style={{ data: { opacity: .5 } }}
+          style={{ data: { stroke: "#9e0101", strokeWidth: 3 } }}
           labelComponent={<CustomLabel offset={[25,40]}/>}
           data={[{x: "a", y: ptY, label: ptLabel}]}
         />

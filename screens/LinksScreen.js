@@ -110,7 +110,7 @@ export default class LinksScreen extends React.Component {
 
   _updateReview = (_reason,_reviewNotes) => {
 
-    if(this.props.screenProps.flags.userType == 'outageEngineer'){
+//    if(this.props.screenProps.flags.userType == 'outageEngineer'){
 
       let text = 'Waiting..';
 
@@ -144,7 +144,7 @@ export default class LinksScreen extends React.Component {
         console.log(response);
         return response.json();
       });
-    }
+//    }
   }
 
 
