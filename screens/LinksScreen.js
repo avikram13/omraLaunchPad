@@ -141,6 +141,37 @@ export default class LinksScreen extends React.Component {
         body:  JSON.stringify(data)
       })
       .then(function(response){
+        console.log('send sms');
+
+        var smsData = {
+          "To": '+15106340191',
+          "From": '+15106942714',
+          "Body":'Work Order review received'
+        }
+
+        var formBody = [];
+
+        for (var property in smsData) {
+          var encodedKey = encodeURIComponent(property);
+          var encodedValue = encodeURIComponent(smsData[property]);
+          formBody.push(encodedKey + "=" + encodedValue);
+        }
+        formBody = formBody.join("&");
+
+        fetch("https://api.twilio.com/2010-04-01/Accounts/AC8b7f49d237b8c675584d41643415d612/Messages.json", {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+              'Authorization': 'Basic QUM4YjdmNDlkMjM3YjhjNjc1NTg0ZDQxNjQzNDE1ZDYxMjo4MWFjYzVmYzUwOWRkMWI2OTU1ZmYwMDk0ZmJkMGExNw=='
+            },
+            method: "POST",
+            body: formBody
+          })
+          .then(function(response){
+            console.log('send sms success',response);
+          }).then(function(response){
+            console.log('send sms not success',response);
+          });
+          console.log('send sms Done');
         console.log(response);
         return response.json();
       });
