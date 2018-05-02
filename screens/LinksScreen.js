@@ -144,7 +144,7 @@ export default class LinksScreen extends React.Component {
         console.log('send sms');
 
         var smsData = {
-          "To": '+15106340191',
+          "To": '+14087841739',
           "From": '+15106942714',
           "Body":'Work Order review received'
         }
